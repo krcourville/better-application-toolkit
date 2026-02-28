@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env", "**/.env.local"],
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "build": {
+      "description": "Build package or app",
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "build/**", ".next/**"],
+      "outputLogs": "new-only",
+      "cache": true
+    },
+    "typecheck": {
+      "description": "Type check package or app",
+      "outputs": [],
+      "cache": true,
+      "outputLogs": "new-only"
+    },
+    "lint": {
+      "description": "Lint package or app",
+      "outputs": [],
+      "cache": false
+    },
+    "dev": {
+      "description": "Start development server",
+      "cache": false,
+      "persistent": true
+    },
+    "test": {
+      "description": "Run tests",
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "outputLogs": "new-only"
+    },
+    "clean": {
+      "description": "Clean build artifacts",
+      "cache": false
+    }
+  }
+}

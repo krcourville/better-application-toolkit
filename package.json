@@ -7,22 +7,26 @@
   "description": "Better Application Toolkit - Observability and reliability toolkit for Node.js applications",
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "build": "pnpm -r --if-present run build",
-    "test": "vitest run",
+    "build": "turbo run build",
+    "test": "turbo run test",
     "test:watch": "vitest",
-    "lint": "biome check .",
+    "lint": "turbo run lint",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "typecheck": "pnpm -r --if-present run typecheck",
-    "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && pnpm -r run clean --if-present",
-    "dev:express": "pnpm --filter express-api dev",
+    "typecheck": "turbo run typecheck",
+    "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && turbo run clean",
+    "dev": "pnpm -w run dev:express",
+    "dev:watch": "npx concurrently \"pnpm -w run build\" \"pnpm -w run dev:express\" --names \"build,server\" --prefix \"[{name}]\" --kill-others-on-exit",
+    "dev:express": "turbo run dev --filter=express-api",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "turbo run build && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@changesets/cli": "^2.27.10",
+    "concurrently": "^8.2.2",
+    "turbo": "^2.3.3",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
