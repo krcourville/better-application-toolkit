@@ -1,0 +1,61 @@
+{
+  "name": "@batkit/logger",
+  "version": "0.1.0",
+  "description": "Logger facade with default console implementation for Node.js and browser",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./console": {
+      "import": {
+        "types": "./dist/console.d.ts",
+        "default": "./dist/console.js"
+      },
+      "require": {
+        "types": "./dist/console.d.cts",
+        "default": "./dist/console.cjs"
+      }
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["logger", "logging", "facade", "console", "structured-logging", "typescript"],
+  "author": "Ken Courville",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
+    "directory": "packages/logger"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/logger#readme",
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

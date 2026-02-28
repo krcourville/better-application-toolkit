@@ -1,0 +1,47 @@
+{
+  "name": "@batkit/monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.0.0",
+  "description": "Better Application Toolkit - Observability and reliability toolkit for Node.js applications",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "pnpm -r --if-present run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && pnpm -r run clean --if-present",
+    "dev:express": "pnpm --filter express-api dev",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.27.10",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git"
+  },
+  "keywords": [
+    "observability",
+    "logging",
+    "error-handling",
+    "express",
+    "middleware",
+    "rfc9457",
+    "toolkit"
+  ],
+  "author": "Ken Courville",
+  "license": "MIT"
+}
