@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env", "**/.env.local"],
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": ["LOG_LEVEL", "DEBUG", "PORT"],
   "tasks": {
     "build": {
       "description": "Build package or app",

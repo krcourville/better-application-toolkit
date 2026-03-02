@@ -1,6 +1,6 @@
 # @batkit/express-middleware
 
-Express middleware for error handling and request context using AsyncLocalStorage (Node.js only).
+Express middleware for error handling with RFC 9457 Problem Details format.
 
 ## Installation
 
@@ -10,44 +10,32 @@ npm install @batkit/express-middleware express
 
 ## Overview
 
-Production-ready Express middleware that provides:
-- Automatic RFC 9457 error formatting
-- Request context tracking with AsyncLocalStorage
-- Request-scoped logging
-- Error handling with proper logging
-- Support for async route handlers
+Production-ready Express middleware for error handling with automatic RFC 9457 Problem Details formatting.
 
 ## Features
 
 - ✅ RFC 9457 Problem Details error responses
-- ✅ AsyncLocalStorage-based request context
-- ✅ Request-scoped logging with automatic request IDs
 - ✅ Handles common error types (AppError, Axios, Zod)
 - ✅ Customizable error formatters
-- ✅ Production and development modes
+- ✅ Support for async route handlers
 - ✅ TypeScript-first
-- ✅ Node.js only (requires AsyncLocalStorage)
+- ✅ Production and development modes
 
 ## Usage
 
 ### Basic Setup
 
 ```typescript
-import { contextMiddleware, errorHandler } from '@batkit/express-middleware';
-import { createPinoLogger } from '@batkit/logger-pino';
+import { errorHandler } from '@batkit/express-middleware';
 import express from 'express';
 
 const app = express();
-const logger = createPinoLogger();
-
-// Add context middleware (must be early in middleware chain)
-app.use(contextMiddleware({ logger }));
 
 // Your routes
 app.get('/users/:id', (req, res) => {
-  req.logger.info('Fetching user');
   // ... your logic
   res.json({ user: {} });
+});
 });
 
 // Add error handler (must be LAST)
@@ -309,7 +297,7 @@ app.post('/users', asyncHandler(async (req, res) => {
 
 // Error handler (MUST be last)
 app.use(errorHandler({
-  includeStack: process.env.NODE_ENV !== 'production'
+  includeStack: true
 }));
 
 const PORT = process.env.PORT || 3000;

@@ -106,8 +106,7 @@ describe('@batkit/rfc9457', () => {
       const result = validateExtendedProblemDetails(extendedDetails);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toHaveProperty('errors');
-        expect((result.data as any).errors).toHaveLength(2);
+        expect(result.data).toEqual(extendedDetails);
       }
     });
 
@@ -161,7 +160,6 @@ describe('@batkit/rfc9457', () => {
     });
 
     it('should require status field', () => {
-      // @ts-expect-error - Testing runtime validation
       expect(() => createProblemDetails({})).toThrow();
     });
   });
@@ -176,15 +174,17 @@ describe('@batkit/rfc9457', () => {
         requestId: 'req-123',
       });
 
-      expect(problem.status).toBe(400);
-      expect(problem).toHaveProperty('validationErrors');
-      expect(problem).toHaveProperty('requestId');
-      expect((problem as any).validationErrors).toHaveLength(1);
-      expect((problem as any).requestId).toBe('req-123');
+      expect(problem).toEqual({
+        status: 400,
+        title: 'Validation Error',
+        type: 'https://example.com/errors/validation',
+        validationErrors: [{ field: 'email', message: 'Invalid format' }],
+        requestId: 'req-123',
+      });
     });
 
     it('should maintain type safety for custom fields', () => {
-      interface ValidationProblem {
+      interface ValidationProblem extends Record<string, unknown> {
         validationErrors: Array<{ field: string; message: string }>;
       }
 
@@ -305,8 +305,12 @@ describe('@batkit/rfc9457', () => {
         accounts: ['/account/12345', '/account/67890'],
       });
 
-      expect((problem as any).balance).toBe(30);
-      expect((problem as any).accounts).toHaveLength(2);
+      expect(problem).toEqual({
+        type: 'https://example.com/probs/out-of-credit',
+        status: 403,
+        balance: 30,
+        accounts: ['/account/12345', '/account/67890'],
+      });
     });
   });
 });

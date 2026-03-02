@@ -10,19 +10,12 @@ import {
   ValidationError,
 } from '@batkit/errors';
 
-const unreachable = () => ({
-  status: 204 as const,
-  body: null,
-});
-
 export const errorHandlers = {
   badRequest: async () => {
     throw new BadRequestError('This is a bad request error example');
-    return unreachable();
   },
   unauthorized: async () => {
     throw new UnauthorizedError('Invalid API token provided');
-    return unreachable();
   },
   forbidden: async () => {
     throw new ForbiddenError(
@@ -30,38 +23,34 @@ export const errorHandlers = {
       'admin-panel',
       'view'
     );
-    return unreachable();
   },
   notFound: async () => {
     throw new NotFoundError('Product', '999');
-    return unreachable();
   },
   conflict: async () => {
     throw new ConflictError('Resource already exists', 'User', 'user@example.com');
-    return unreachable();
   },
   validation: async () => {
     throw new ValidationError('Validation failed', [
-      { field: 'email', message: 'Must be a valid email address', value: 'invalid-email' },
+      {
+        field: 'email',
+        message: 'Must be a valid email address',
+        value: 'invalid-email',
+      },
       { field: 'age', message: 'Must be at least 18', value: 15 },
       { field: 'password', message: 'Must be at least 8 characters' },
     ]);
-    return unreachable();
   },
   rateLimit: async () => {
     throw new TooManyRequestsError('Too many requests, please try again later', 60, 100);
-    return unreachable();
   },
   internal: async () => {
     throw new InternalServerError('Simulated internal server error');
-    return unreachable();
   },
   serviceUnavailable: async () => {
     throw new ServiceUnavailableError('Service is temporarily unavailable for maintenance', 3600);
-    return unreachable();
   },
   generic: async () => {
     throw new Error('This is a generic JavaScript error');
-    return unreachable();
   },
 };

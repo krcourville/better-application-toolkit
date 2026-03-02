@@ -9,6 +9,10 @@ A comprehensive, production-ready toolkit for building observable and reliable N
 
 Better Application Toolkit (BAT) is a suite of TypeScript packages designed to improve observability, reliability, and developer experience for Node.js web applications. All packages are designed to work in both Node.js and browser environments (where applicable).
 
+## TODO
+
+- add docs of logging pitfalls and recommendations.
+
 ## Packages
 
 ### Core Packages
@@ -51,14 +55,11 @@ pnpm add @batkit/logger @batkit/errors @batkit/express-middleware
 ```typescript
 import { createConsoleLogger } from '@batkit/logger';
 import { NotFoundError } from '@batkit/errors';
-import { errorHandler, contextMiddleware } from '@batkit/express-middleware';
+import { errorHandler } from '@batkit/express-middleware';
 import express from 'express';
 
 const app = express();
 const logger = createConsoleLogger();
-
-// Add request context middleware
-app.use(contextMiddleware({ logger }));
 
 // Your routes
 app.get('/users/:id', (req, res) => {
@@ -127,14 +128,126 @@ npm install -g pnpm@9
 # Install dependencies
 pnpm install
 
-# Build all packages
+# Build all packages (required for first-time setup)
 pnpm build
 
 # Run tests
 pnpm test
 
 # Start development server for Express reference app
-pnpm dev:express
+pnpm dev
+```
+
+### Development Workflow
+
+This monorepo uses **TypeScript Project References** for optimal development experience:
+
+#### Development Mode
+
+**Hot Reload Development with tsx (Recommended)**
+```bash
+# Fast development - no builds needed, instant reload
+pnpm dev
+```
+This uses `tsx` to run TypeScript directly with watch mode. Changes to source files (including workspace packages) are picked up immediately. **This is the preferred way to develop.**
+
+The `pnpm dev` script automatically sets `LOCAL_DEV=true`, which enables:
+- Pretty-printed console logs with colors and timestamps
+- Enhanced logging output for better readability during development
+
+**To run with different log levels:**
+```bash
+# Default is 'info'
+LOG_LEVEL=debug pnpm dev
+LOG_LEVEL=warn pnpm dev
+```
+
+#### Production Builds
+
+**Build for production:**
+```bash
+# Build all packages with TypeScript project references
+pnpm build
+
+# Clean all build artifacts and rebuild
+pnpm build:clean && pnpm build
+
+# Run the production build
+pnpm --filter express-api start
+```
+
+#### Navigating Code
+
+With TypeScript project references enabled:
+- **Go-to-definition** takes you to the source `.ts` file, not `.d.ts` declarations
+- **IntelliSense** works across packages
+- Changes in dependent packages are automatically detected
+
+#### TypeScript Project References
+
+The monorepo is configured with composite builds:
+- Each package has `"composite": true` in its `tsconfig.json`
+- Dependencies between packages are declared via `"references"`
+- The root `tsconfig.json` orchestrates the whole workspace
+- `tsc --build` performs incremental, dependency-aware compilation
+
+#### Common Development Tasks
+
+**Making changes to a package:**
+```bash
+# Start development - tsx picks up changes automatically
+pnpm dev
+```
+
+**Testing your changes:**
+```bash
+# Run tests for all packages
+pnpm test
+
+# Run tests for a specific package
+pnpm --filter @batkit/errors test
+
+# Watch mode for TDD
+pnpm test:watch
+```
+
+**Building for production:**
+```bash
+# Build everything
+pnpm build
+
+# Build and run production server
+pnpm build && pnpm --filter express-api start
+```
+
+**Adding a new dependency to a package:**
+```bash
+# Navigate to the package
+cd packages/logger
+
+# Add the dependency
+pnpm add some-package
+
+# Or add a workspace dependency
+pnpm add @batkit/errors@workspace:*
+```
+
+**Troubleshooting:**
+
+If you encounter issues:
+```bash
+# Clean everything and reinstall
+pnpm clean
+pnpm install
+
+# Clean only build artifacts
+pnpm build:clean
+
+# Rebuild everything from scratch
+pnpm build:clean && pnpm build
+
+# Kill server if port 3000 is busy
+pnpm stop-server
 ```
 
 ### Project Structure
@@ -155,13 +268,25 @@ better-application-toolkit/
 
 ### Available Scripts
 
-- `pnpm build` - Build all packages
+**Development**
+- `pnpm dev` - Run Express reference app with hot reload (tsx, no build needed)
+
+**Building**
+- `pnpm build` - Build all packages with TypeScript project references
+- `pnpm build:clean` - Clean all build artifacts
+
+**Testing & Quality**
 - `pnpm test` - Run all tests
+- `pnpm test:watch` - Run tests in watch mode
 - `pnpm lint` - Lint all code
-- `pnpm format` - Format all code
+- `pnpm lint:fix` - Lint and auto-fix issues
+- `pnpm format` - Format all code with Biome
 - `pnpm typecheck` - Type check all packages
-- `pnpm dev:express` - Run Express reference app in watch mode
+
+**Utilities**
+- `pnpm stop-server` - Kill any process running on port 3000
 - `pnpm changeset` - Create a new changeset for versioning
+- `pnpm clean` - Remove all node_modules and lockfiles
 
 ## Contributing
 

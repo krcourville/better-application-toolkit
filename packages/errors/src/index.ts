@@ -78,7 +78,7 @@ export class AppError extends Error {
       statusCode: this.statusCode,
       details: this.details,
       timestamp: this.timestamp.toISOString(),
-      ...(process.env['NODE_ENV'] !== 'production' && { stack: this.stack }),
+      stack: this.stack,
     };
   }
 }

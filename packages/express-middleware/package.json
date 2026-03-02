@@ -28,15 +28,7 @@
     "lint": "biome check .",
     "clean": "rm -rf dist"
   },
-  "keywords": [
-    "express",
-    "middleware",
-    "error-handling",
-    "rfc9457",
-    "async-local-storage",
-    "context",
-    "typescript"
-  ],
+  "keywords": ["express", "middleware", "error-handling", "rfc9457", "typescript"],
   "author": "Ken Courville",
   "license": "MIT",
   "repository": {

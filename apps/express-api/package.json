@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc --build",
+    "build:clean": "tsc --build --clean",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
@@ -31,7 +32,8 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "pino-pretty": "^13.0.0"
   },
   "engines": {
     "node": ">=22.0.0"

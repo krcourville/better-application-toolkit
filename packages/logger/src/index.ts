@@ -1,6 +1,9 @@
 // Export types
-export { LogLevel, LOG_LEVEL_VALUES } from './types.js';
-export type { Logger, LoggerContext, LoggerFactory, LoggerOptions } from './types.js';
+export type { LogLevel, LogValue } from './types.js';
+export type { Logger, LogMethod, LoggerOptions, LoggerProvider } from './types.js';
 
-// Export console logger implementation as main export
-export { ConsoleLogger, ConsoleLoggerFactory, createConsoleLogger } from './console-logger.js';
+// Export console logger implementation
+export { ConsoleLoggerProvider, createConsoleLoggerProvider } from './console-logger.js';
+
+// Export LoggerFacade (main API)
+export { LoggerFacade } from './logger-facade.js';

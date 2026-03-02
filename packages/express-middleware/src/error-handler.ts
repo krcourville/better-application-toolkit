@@ -1,12 +1,13 @@
 import { isAppError } from '@batkit/errors';
+import { LoggerFacade } from '@batkit/logger';
 import {
   type ExtendedProblemDetails,
   PROBLEM_DETAILS_CONTENT_TYPE,
   createExtendedProblemDetails,
 } from '@batkit/rfc9457';
 import type { NextFunction, Request, Response } from 'express';
-import { getContext } from './context.js';
 
+const logger = LoggerFacade.getLogger('error-handler');
 /**
  * Interface for custom error formatters
  */
@@ -43,12 +44,12 @@ export class DefaultErrorFormatter implements ErrorFormatter {
 
     // Handle Axios errors
     if (this.isAxiosError(error)) {
-      return this.formatAxiosError(error as any);
+      return this.formatAxiosError(error as Record<string, unknown>);
     }
 
     // Handle Zod validation errors
     if (this.isZodError(error)) {
-      return this.formatZodError(error as any);
+      return this.formatZodError(error as Record<string, unknown>);
     }
 
     // Handle generic Error
@@ -84,28 +85,28 @@ export class DefaultErrorFormatter implements ErrorFormatter {
       typeof error === 'object' &&
       error !== null &&
       'issues' in error &&
-      Array.isArray((error as any).issues)
+      Array.isArray((error as Record<string, unknown>).issues)
     );
   }
 
-  private formatAxiosError(error: any): ExtendedProblemDetails {
-    const status = error.response?.status || 502;
+  private formatAxiosError(error: Record<string, unknown>): ExtendedProblemDetails {
+    const status = ((error.response as Record<string, unknown>)?.status as number) || 502;
     return createExtendedProblemDetails({
       type: 'error:upstream',
       title: 'Upstream Service Error',
       status,
-      detail: error.message,
-      upstreamUrl: error.config?.url,
-      upstreamMethod: error.config?.method?.toUpperCase(),
-      upstreamStatus: error.response?.status,
+      detail: error.message as string,
+      upstreamUrl: (error.config as Record<string, unknown>)?.url as string | undefined,
+      upstreamMethod: ((error.config as Record<string, unknown>)?.method as string)?.toUpperCase(),
+      upstreamStatus: (error.response as Record<string, unknown>)?.status as number | undefined,
     });
   }
 
-  private formatZodError(error: any): ExtendedProblemDetails {
-    const validationErrors = error.issues.map((issue: any) => ({
-      field: issue.path.join('.'),
-      message: issue.message,
-      code: issue.code,
+  private formatZodError(error: Record<string, unknown>): ExtendedProblemDetails {
+    const validationErrors = (error.issues as Array<Record<string, unknown>>).map((issue) => ({
+      field: (issue.path as unknown[]).join('.'),
+      message: issue.message as string,
+      code: issue.code as string,
     }));
 
     return createExtendedProblemDetails({
@@ -170,7 +171,7 @@ export function errorHandler(
 ): (error: Error, req: Request, res: Response, next: NextFunction) => void {
   const {
     formatters = [new DefaultErrorFormatter()],
-    includeStack = process.env['NODE_ENV'] !== 'production',
+    includeStack = true,
     logErrors = true,
     onError,
   } = options;
@@ -178,7 +179,8 @@ export function errorHandler(
   return (error: Error, req: Request, res: Response, next: NextFunction): void => {
     // If headers already sent, delegate to default Express error handler
     if (res.headersSent) {
-      return next(error);
+      next(error);
+      return;
     }
 
     // Log the error
@@ -186,11 +188,8 @@ export function errorHandler(
       if (onError) {
         onError(error, req);
       } else {
-        const context = getContext();
-        const logger = context?.logger || console;
-
         if (isAppError(error) && error.isOperational) {
-          logger.warn?.('Operational error occurred', {
+          logger.warn('Operational error occurred', {
             error: error.message,
             code: error.code,
             statusCode: error.statusCode,
@@ -198,10 +197,11 @@ export function errorHandler(
             method: req.method,
           });
         } else {
-          logger.error?.('Unhandled error occurred', error, {
+          logger.error(error, {
             path: req.path,
             method: req.method,
-            query: req.query,
+            querd: req.method,
+            consoley: req.query,
             body: req.body,
           });
         }
@@ -226,7 +226,7 @@ export function errorHandler(
 
     // Add stack trace if enabled
     if (includeStack && error.stack) {
-      (problemDetails as any).stack = error.stack.split('\n').map((line) => line.trim());
+      problemDetails.stack = error.stack.split('\n').map((line) => line.trim());
     }
 
     // Add instance (request path)
@@ -263,7 +263,7 @@ export function errorHandler(
  * ```
  */
 export function asyncHandler(
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
     Promise.resolve(fn(req, res, next)).catch(next);

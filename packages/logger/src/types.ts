@@ -1,80 +1,72 @@
 /**
- * Log levels in order of severity
+ * Log levels
  */
-export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
+export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+
+/**
+ * Type-safe log values (only serializable types)
+ */
+export type LogValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | { [key: string]: LogValue }
+  | LogValue[];
+
+/**
+ * Opinionated log method signature that enforces consistent error logging
+ * Compatible with pino's LogFn so drivers can be swapped easily
+ *
+ * @example
+ * // Context only
+ * logger.info({ userId: '123' })
+ *
+ * // Message + context
+ * logger.info("User created", { userId: '123' })
+ *
+ * // Error + context
+ * logger.error(new Error("DB failed"), { retries: 3 })
+ *
+ * // Error + message + context
+ * logger.error(new Error("DB failed"), "Failed to fetch user", { userId: '123' })
+ */
+export interface LogMethod {
+  (context: Record<string, LogValue>): void;
+  (msg: string, context?: Record<string, LogValue>): void;
+  (error: Error, context?: Record<string, LogValue>): void;
+  (error: Error, msg?: string, context?: Record<string, LogValue>): void;
 }
 
 /**
- * Numeric values for log levels (for filtering)
- */
-export const LOG_LEVEL_VALUES: Record<LogLevel, number> = {
-  [LogLevel.DEBUG]: 10,
-  [LogLevel.INFO]: 20,
-  [LogLevel.WARN]: 30,
-  [LogLevel.ERROR]: 40,
-};
-
-/**
- * Context that can be attached to a logger
- */
-export interface LoggerContext {
-  [key: string]: unknown;
-}
-
-/**
- * Core logger interface that all implementations must satisfy
+ * Core logger interface - opinionated and simple
+ * All implementations must satisfy these signatures
  */
 export interface Logger {
-  /**
-   * Log a debug message
-   * @param message - The log message
-   * @param args - Additional structured data
-   */
-  debug(message: string, ...args: unknown[]): void;
-
-  /**
-   * Log an info message
-   * @param message - The log message
-   * @param args - Additional structured data
-   */
-  info(message: string, ...args: unknown[]): void;
-
-  /**
-   * Log a warning message
-   * @param message - The log message
-   * @param args - Additional structured data
-   */
-  warn(message: string, ...args: unknown[]): void;
-
-  /**
-   * Log an error message
-   * @param message - The log message
-   * @param args - Additional structured data (may include Error objects)
-   */
-  error(message: string, ...args: unknown[]): void;
-
-  /**
-   * Create a child logger with additional context
-   * @param context - Context to merge with parent context
-   * @returns A new logger instance with merged context
-   */
-  child(context: LoggerContext): Logger;
+  debug: LogMethod;
+  info: LogMethod;
+  warn: LogMethod;
+  error: LogMethod;
 }
 
 /**
- * Factory interface for creating logger instances
+ * Logger provider that creates named logger instances
  */
-export interface LoggerFactory {
+export interface LoggerProvider {
   /**
-   * Create a new logger instance
-   * @param context - Optional initial context
-   * @returns A logger instance
+   * Get a logger for a given name
+   * @param name - Logger name (e.g., 'database', 'auth', 'api')
+   * @returns Logger instance
    */
-  createLogger(context?: LoggerContext): Logger;
+  getLogger(name: string): Logger;
+
+  /**
+   * Check if a log level is enabled
+   * @param level - Log level to check
+   * @returns true if the level would be logged
+   */
+  isLogLevelEnabled(level: LogLevel): boolean;
 }
 
 /**
@@ -89,7 +81,7 @@ export interface LoggerOptions {
   /**
    * Base context to include in all logs
    */
-  context?: LoggerContext;
+  context?: Record<string, LogValue>;
 
   /**
    * Whether to pretty-print logs (vs structured JSON)

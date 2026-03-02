@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/errors" },
+    { "path": "./packages/logger" },
+    { "path": "./packages/rfc9457" },
+    { "path": "./packages/logger-pino" },
+    { "path": "./packages/express-middleware" },
+    { "path": "./apps/express-api" }
+  ]
+}

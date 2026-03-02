@@ -71,7 +71,9 @@ describe('@batkit/errors', () => {
     });
 
     it('should convert to JSON', () => {
-      const error = new AppError(500, 'Server error', 'SERVER_ERROR', { foo: 'bar' });
+      const error = new AppError(500, 'Server error', 'SERVER_ERROR', {
+        foo: 'bar',
+      });
       const json = error.toJSON();
 
       expect(json.name).toBe('AppError');
@@ -117,9 +119,13 @@ describe('@batkit/errors', () => {
       const error = new ValidationError('Validation failed', validationErrors);
       const rfc9457 = error.toRFC9457();
 
-      expect(rfc9457.type).toBe('error:validation');
-      expect(rfc9457).toHaveProperty('validationErrors');
-      expect((rfc9457 as any).validationErrors).toEqual(validationErrors);
+      expect(rfc9457).toEqual({
+        type: 'error:validation',
+        title: 'Validation Error',
+        status: 400,
+        detail: 'Validation failed',
+        validationErrors,
+      });
     });
   });
 
@@ -179,10 +185,14 @@ describe('@batkit/errors', () => {
       const error = new NotFoundError('Order', 789);
       const rfc9457 = error.toRFC9457();
 
-      expect(rfc9457.type).toBe('error:not-found');
-      expect(rfc9457.title).toBe('Resource Not Found');
-      expect((rfc9457 as any).entityName).toBe('Order');
-      expect((rfc9457 as any).entityId).toBe(789);
+      expect(rfc9457).toEqual({
+        type: 'error:not-found',
+        title: 'Resource Not Found',
+        status: 404,
+        detail: "Order with id '789' was not found",
+        entityName: 'Order',
+        entityId: 789,
+      });
     });
   });
 
@@ -221,9 +231,14 @@ describe('@batkit/errors', () => {
       const error = new TooManyRequestsError('Rate limit', 30, 50);
       const rfc9457 = error.toRFC9457();
 
-      expect(rfc9457.type).toBe('error:too-many-requests');
-      expect((rfc9457 as any).retryAfter).toBe(30);
-      expect((rfc9457 as any).limit).toBe(50);
+      expect(rfc9457).toEqual({
+        type: 'error:too-many-requests',
+        title: 'Too Many Requests',
+        status: 429,
+        detail: 'Rate limit',
+        retryAfter: 30,
+        limit: 50,
+      });
     });
 
     it('should work without retry info', () => {
@@ -281,7 +296,13 @@ describe('@batkit/errors', () => {
       const error = new ServiceUnavailableError('Down for maintenance', 1800);
       const rfc9457 = error.toRFC9457();
 
-      expect((rfc9457 as any).retryAfter).toBe(1800);
+      expect(rfc9457).toEqual({
+        type: 'error:service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail: 'Down for maintenance',
+        retryAfter: 1800,
+      });
     });
   });
 
