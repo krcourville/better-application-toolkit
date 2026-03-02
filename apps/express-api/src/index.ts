@@ -10,7 +10,7 @@ LoggerFacade.setProvider(
           target: "pino-pretty",
           options: {
             colorize: true,
-            translateTime: "yyyy-mm-dd HH:MM:ss.l o",
+            translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
             ignore: "pid,hostname",
           },
         }
