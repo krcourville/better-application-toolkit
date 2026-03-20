@@ -10,8 +10,8 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "tsc --build",
-    "build:clean": "tsc --build --clean",
+    "build": "turbo run build",
+    "build:clean": "turbo run clean && tsc --build --clean",
     "test": "turbo run test",
     "test:watch": "vitest",
     "lint": "turbo run lint",
@@ -19,7 +19,7 @@
     "format": "biome format --write .",
     "typecheck": "turbo run typecheck",
     "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && turbo run clean",
-    "dev": "LOCAL_DEV=true pnpm --filter express-api dev",
+    "dev": "LOCAL_DEV=true turbo run dev --filter=express-api...",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",

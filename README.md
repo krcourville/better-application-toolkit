@@ -91,8 +91,8 @@ This repo uses pnpm workspaces with the `workspace:*` protocol, which is nativel
 
 ```bash
 asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-asdf install nodejs 22.11.0
-asdf set nodejs 22.11.0
+asdf install nodejs 24.4.1
+asdf set nodejs 24.4.1
 node -v
 pnpm -v
 ```
@@ -100,7 +100,7 @@ pnpm -v
 If `asdf set` is unavailable, create `.tool-versions` manually:
 
 ```bash
-echo "nodejs 22.11.0" > .tool-versions
+echo "nodejs 24.4.1" > .tool-versions
 asdf install
 node -v
 pnpm -v

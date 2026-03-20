@@ -6,7 +6,11 @@ export default defineConfig({
     console: 'src/console.ts',
   },
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      composite: false,
+    },
+  },
   splitting: false,
   sourcemap: true,
   clean: true,

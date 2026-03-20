@@ -15,11 +15,10 @@ export class PinoLoggerProvider implements LoggerProvider {
   }
 
   getLogger(name: string): Logger {
-    return this.rootLogger.child({ logger: name });
+    return this.rootLogger.child({ name });
   }
 
-  isLogLevelEnabled(_level: LogLevel): boolean {
-    // return this.rootLogger.child({ logger: name });
-    return true;
+  isLogLevelEnabled(level: LogLevel): boolean {
+    return this.rootLogger.isLevelEnabled(level);
   }
 }
