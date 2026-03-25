@@ -12,15 +12,19 @@ npm install @batkit/logger
 
 A lightweight logger facade that provides a consistent logging interface for both Node.js and browser environments. Includes a production-ready console logger implementation with structured logging support.
 
+### Developing in this monorepo
+
+This package builds **two** outputs (`index` / `console` and the Node-only `@batkit/logger/async-local`). From the repo root, `pnpm dev` runs both watch processes for `@batkit/logger` via **Turborepo’s [`with`](https://turbo.build/repo/docs/reference/configuration#with)** (`dev` + `dev:async-local`). If you run `pnpm dev` only inside `packages/logger`, start `pnpm dev:async-local` in a second terminal as well.
+
 ## Features
 
 - ✅ Simple, intuitive API
-- ✅ Works in Node.js and browsers
+- ✅ Works in Node.js and browsers (the main entry is isomorphic; **`@batkit/logger/async-local`** is Node-only)
 - ✅ Structured logging support
-- ✅ Child loggers with context
+- ✅ **Async-local log context** (Node): `@batkit/logger/async-local`
 - ✅ Log level filtering
 - ✅ Pretty and JSON output modes
-- ✅ Zero dependencies
+- ✅ Zero runtime dependencies on the core facade
 - ✅ TypeScript-first
 - ✅ ESM and CommonJS support
 
@@ -29,22 +33,22 @@ A lightweight logger facade that provides a consistent logging interface for bot
 ### Basic Logging
 
 ```typescript
-import { createConsoleLogger, LogLevel } from '@batkit/logger';
+import { LoggerFacade } from '@batkit/logger';
 
-const logger = createConsoleLogger({ level: LogLevel.INFO });
+const logger = LoggerFacade.getLogger('my-app');
 
-logger.debug('Debug message'); // Won't be logged (below INFO level)
+logger.debug('Debug message');
 logger.info('Application started');
 logger.warn('Low disk space');
-logger.error('Failed to connect to database');
+logger.error(new Error('Failed to connect to database'));
 ```
 
 ### Structured Logging
 
 ```typescript
-import { createConsoleLogger } from '@batkit/logger';
+import { LoggerFacade } from '@batkit/logger';
 
-const logger = createConsoleLogger();
+const logger = LoggerFacade.getLogger('my-app');
 
 // Add structured data to logs
 logger.info('User logged in', {
@@ -53,131 +57,59 @@ logger.info('User logged in', {
   ipAddress: '192.168.1.1'
 });
 
-// Error logging
+// Error logging (error first, then message, then context)
 try {
   // ... some code
 } catch (error) {
-  logger.error('Operation failed', error, { operation: 'createUser' });
+  if (error instanceof Error) {
+    logger.error(error, 'Operation failed', { operation: 'createUser' });
+  }
 }
 ```
 
-### Child Loggers with Context
+### Async-local log context (Node only)
+
+**Background:** [Understanding AsyncLocalStorage](../../docs/async-local-storage.md)
+
+For request- or job-scoped fields (`requestId`, `transactionId`, etc.), use the **`@batkit/logger/async-local`** entry (built on `AsyncLocalStorage`). Wrap your `LoggerProvider` with `ContextualLoggerProvider`, run the scope with `runWithLogContext`, and optionally merge more fields later with `mergeLogContext`.
 
 ```typescript
-import { createConsoleLogger } from '@batkit/logger';
+import { LoggerFacade } from '@batkit/logger';
+import {
+  ContextualLoggerProvider,
+  mergeLogContext,
+  runWithLogContext,
+  getLogContext,
+} from '@batkit/logger/async-local';
+import { PinoLoggerProvider } from '@batkit/logger-pino';
+import { randomUUID } from 'node:crypto';
 
-const baseLogger = createConsoleLogger({
-  context: { app: 'my-api', env: 'production' }
+LoggerFacade.setProvider(
+  new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })),
+);
+
+runWithLogContext({ requestId: randomUUID() }, () => {
+  mergeLogContext({ transactionId: 'txn-123' });
+  const log = LoggerFacade.getLogger('payments');
+  log.info('Captured'); // structured context includes both ids
+  console.log(getLogContext());
 });
-
-// Create child logger with additional context
-const requestLogger = baseLogger.child({
-  requestId: '550e8400-e29b-41d4-a716-446655440000'
-});
-
-requestLogger.info('Processing request');
-// Logs will include: app, env, and requestId
 ```
 
-### Using the Factory
+In Express, mount [`logContextMiddleware`](../express-middleware/README.md) early instead of calling `runWithLogContext` yourself at the top of every route.
 
-```typescript
-import { ConsoleLoggerFactory, LogLevel } from '@batkit/logger';
+### JSON / structured output
 
-const factory = new ConsoleLoggerFactory({
-  level: LogLevel.DEBUG,
-  context: { service: 'api' }
-});
-
-const logger1 = factory.createLogger({ module: 'auth' });
-const logger2 = factory.createLogger({ module: 'users' });
-
-logger1.info('Auth check'); // Includes service: 'api', module: 'auth'
-logger2.info('User created'); // Includes service: 'api', module: 'users'
-```
-
-### JSON Output
-
-```typescript
-import { createConsoleLogger, LogLevel } from '@batkit/logger';
-
-const logger = createConsoleLogger({
-  level: LogLevel.INFO,
-  pretty: false // Outputs structured JSON
-});
-
-logger.info('User action', { userId: '123', action: 'login' });
-// Output: {"level":"info","message":"User action","timestamp":"2026-02-28T...","userId":"123","action":"login"}
-```
+For JSON log lines in production, use [@batkit/logger-pino](../logger-pino) (or another `LoggerProvider`) and attach it with `LoggerFacade.setProvider`.
 
 ## API Reference
 
-### Types
+See exported types in `src/types.ts`. Highlights:
 
-#### `Logger`
-
-```typescript
-interface Logger {
-  debug(message: string, ...args: unknown[]): void;
-  info(message: string, ...args: unknown[]): void;
-  warn(message: string, ...args: unknown[]): void;
-  error(message: string, ...args: unknown[]): void;
-  child(context: LoggerContext): Logger;
-}
-```
-
-#### `LogLevel`
-
-```typescript
-enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-}
-```
-
-#### `LoggerOptions`
-
-```typescript
-interface LoggerOptions {
-  level?: LogLevel;
-  context?: LoggerContext;
-  pretty?: boolean; // Default: true
-}
-```
-
-### Functions
-
-#### `createConsoleLogger(options?): Logger`
-
-Creates a console logger instance.
-
-**Parameters:**
-- `options`: Optional `LoggerOptions`
-
-**Returns:** `Logger` instance
-
-### Classes
-
-#### `ConsoleLogger`
-
-Console-based logger implementation.
-
-```typescript
-new ConsoleLogger(options?: LoggerOptions)
-```
-
-#### `ConsoleLoggerFactory`
-
-Factory for creating console logger instances with shared configuration.
-
-```typescript
-new ConsoleLoggerFactory(defaultOptions?: LoggerOptions)
-```
-
-**Methods:**
-- `createLogger(context?: LoggerContext): Logger` - Create a new logger instance
+- **`Logger`** — `debug` / `info` / `warn` / `error` use the `LogMethod` overloads (context-only, message + context, error + context, error + message + context).
+- **`LoggerProvider`** — `getLogger(name)`, `isLogLevelEnabled`.
+- **`LoggerFacade`** — `getLogger`, `setProvider`, `getProvider`, `configure`.
+- **Node-only:** `@batkit/logger/async-local` — `runWithLogContext`, `getLogContext`, `mergeLogContext`, `ContextualLoggerProvider`.
 
 ## Using with Other Implementations
 
@@ -187,36 +119,19 @@ This package provides the logger facade. You can use alternative implementations
 
 ```typescript
 import type { Logger } from '@batkit/logger';
-import { createPinoLogger } from '@batkit/logger-pino';
+import { PinoLoggerProvider } from '@batkit/logger-pino';
 
-const logger: Logger = createPinoLogger({
-  level: 'info'
-});
+// Example: use LoggerFacade.setProvider(new PinoLoggerProvider({ level: 'info' }))
+// or wrap with ContextualLoggerProvider when using async-local context.
+const provider = new PinoLoggerProvider({ level: 'info' });
+const logger: Logger = provider.getLogger('app');
 
 logger.info('Using Pino implementation');
 ```
 
 ## Integration with Express
 
-Use with [@batkit/express-middleware](../express-middleware) for request context logging:
-
-```typescript
-import { createConsoleLogger } from '@batkit/logger';
-import { contextMiddleware } from '@batkit/express-middleware';
-import express from 'express';
-
-const app = express();
-const logger = createConsoleLogger();
-
-// Add request context to all logs
-app.use(contextMiddleware({ logger }));
-
-app.get('/users', (req, res) => {
-  // Logger automatically includes request ID
-  req.logger.info('Fetching users');
-  res.json({ users: [] });
-});
-```
+Use [`logContextMiddleware`](../express-middleware/README.md) together with `ContextualLoggerProvider` so each request runs inside `runWithLogContext` and structured logs include correlation fields. See `apps/express-api` for a full example (`POST /api/demo/fulfillment`).
 
 ## Best Practices
 
@@ -235,11 +150,11 @@ app.get('/users', (req, res) => {
    logger.info(`User ${userId} created with email ${email}`);
    ```
 
-3. **Use child loggers** for request/context-specific logging
+3. **Use `@batkit/logger/async-local`** on Node when many layers need the same correlation ids without threading them through every function
 
-4. **Include errors as separate arguments**:
+4. **Include errors first** (per `LogMethod` overloads), then optional message, then context:
    ```typescript
-   logger.error('Failed to save user', error, { userId });
+   logger.error(error, 'Failed to save user', { userId });
    ```
 
 ## TypeScript
@@ -247,10 +162,10 @@ app.get('/users', (req, res) => {
 Full TypeScript support with exported types:
 
 ```typescript
-import type { Logger, LoggerContext, LoggerFactory } from '@batkit/logger';
+import type { Logger, LoggerProvider } from '@batkit/logger';
 
-function setupLogger(factory: LoggerFactory): Logger {
-  return factory.createLogger({ service: 'api' });
+function setupLogger(provider: LoggerProvider, name: string): Logger {
+  return provider.getLogger(name);
 }
 ```
 
@@ -259,9 +174,11 @@ function setupLogger(factory: LoggerFactory): Logger {
 For optimal tree-shaking, import from the specific entry point:
 
 ```typescript
-// Import only the console logger
-import { createConsoleLogger } from '@batkit/logger/console';
+// Import only the console entry (re-exports console helpers)
+import { ConsoleLoggerProvider } from '@batkit/logger/console';
 ```
+
+**Node-only:** `@batkit/logger/async-local`
 
 ## License
 

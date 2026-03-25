@@ -9,9 +9,10 @@ A comprehensive, production-ready toolkit for building observable and reliable N
 
 Better Application Toolkit (BAT) is a suite of TypeScript packages designed to improve observability, reliability, and developer experience for Node.js web applications. All packages are designed to work in both Node.js and browser environments (where applicable).
 
-## TODO
+## Documentation
 
-- add docs of logging pitfalls and recommendations.
+- **[Understanding AsyncLocalStorage](./docs/async-local-storage.md)** — how ALS works, use cases, pitfalls, and how BAT uses it for logging.
+- Logging pitfalls and patterns: see [@batkit/logger](./packages/logger/README.md) and the AsyncLocalStorage guide above.
 
 ## Packages
 
@@ -53,13 +54,23 @@ pnpm add @batkit/logger @batkit/errors @batkit/express-middleware
 ### Basic Usage
 
 ```typescript
-import { createConsoleLogger } from '@batkit/logger';
+import { LoggerFacade } from '@batkit/logger';
+import { ContextualLoggerProvider } from '@batkit/logger/async-local';
+import { PinoLoggerProvider } from '@batkit/logger-pino';
 import { NotFoundError } from '@batkit/errors';
-import { errorHandler } from '@batkit/express-middleware';
+import { errorHandler, logContextMiddleware } from '@batkit/express-middleware';
 import express from 'express';
+import { randomUUID } from 'node:crypto';
+
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
 
 const app = express();
-const logger = createConsoleLogger();
+app.use(express.json());
+app.use(
+  logContextMiddleware({
+    initialContext: (req) => ({ requestId: req.get('x-request-id') ?? randomUUID() }),
+  }),
+);
 
 // Your routes
 app.get('/users/:id', (req, res) => {
@@ -144,12 +155,12 @@ This monorepo uses **TypeScript Project References** for optimal development exp
 
 #### Development Mode
 
-**Hot Reload Development with tsx (Recommended)**
+**Hot reload (recommended)**
 ```bash
-# Fast development - no builds needed, instant reload
+# express-api runs from TypeScript via esno (`tsx` under the hood); workspace libraries rebuild with tsup --watch
 pnpm dev
 ```
-This uses `tsx` to run TypeScript directly with watch mode. Changes to source files (including workspace packages) are picked up immediately. **This is the preferred way to develop.**
+This runs the Express app with [`esno`](https://github.com/esbuild-kit/esno) (`esno watch`), which delegates to [`tsx`](https://github.com/privatenumber/tsx). Turborepo also starts persistent **`dev`** (and **`dev:async-local`** for `@batkit/logger`) so linked packages emit `dist/**` while you work. **This is the preferred way to develop.**
 
 The `pnpm dev` script automatically sets `LOCAL_DEV=true`, which enables:
 - Pretty-printed console logs with colors and timestamps
@@ -195,7 +206,7 @@ The monorepo is configured with composite builds:
 
 **Making changes to a package:**
 ```bash
-# Start development - tsx picks up changes automatically
+# Start development (esno + Turbo package watchers)
 pnpm dev
 ```
 
@@ -246,7 +257,7 @@ pnpm build:clean
 # Rebuild everything from scratch
 pnpm build:clean && pnpm build
 
-# Kill server if port 3000 is busy
+# Kill server if the reference app port (default 3785) is busy
 pnpm stop-server
 ```
 
@@ -269,7 +280,7 @@ better-application-toolkit/
 ### Available Scripts
 
 **Development**
-- `pnpm dev` - Run Express reference app with hot reload (tsx, no build needed)
+- `pnpm dev` - Run Express reference app with hot reload (esno + Turbo watchers for workspace packages)
 
 **Building**
 - `pnpm build` - Build all packages with TypeScript project references
@@ -284,7 +295,7 @@ better-application-toolkit/
 - `pnpm typecheck` - Type check all packages
 
 **Utilities**
-- `pnpm stop-server` - Kill any process running on port 3000
+- `pnpm stop-server` - Kill any process on the express-api default port (3785; matches `PORT` in `.env`)
 - `pnpm changeset` - Create a new changeset for versioning
 - `pnpm clean` - Remove all node_modules and lockfiles
 

@@ -1,4 +1,4 @@
-import type { LogLevel, LogMethod, Logger, LoggerProvider } from "./types.js";
+import type { LogLevel, LogMethod, LogValue, Logger, LoggerProvider } from './types.js';
 
 /**
  * Simple console-based logger that delegates to console methods
@@ -14,7 +14,15 @@ class ConsoleLogger implements Logger {
     this.info = console.info.bind(console, `[${name}]`);
     this.warn = console.warn.bind(console, `[${name}]`);
     this.error = console.error.bind(console, `[${name}]`);
+    this.mergeContext = (_partial: Record<string, LogValue>) => {
+      void _partial;
+      throw new Error(
+        `Logger "${name}" mergeContext() requires ContextualLoggerProvider, runWithLogContext(), and a Node ALS-capable provider (see @batkit/logger/async-local).`
+      );
+    };
   }
+
+  mergeContext!: (partial: Record<string, LogValue>) => void;
 }
 
 /**

@@ -5,9 +5,8 @@ export function startServer(): void {
   const logger = LoggerFacade.getLogger("server");
 
   const httpServer = app.listen(PORT, () => {
-    logger.info("Server started", {
-      port: PORT,
-    });
+    logger.info(`Server started on http://localhost:${PORT}`);
+    logger.info(`Docs available at http://localhost:${PORT}/docs`);
   });
 
   const shutdown = (signal: string) => {

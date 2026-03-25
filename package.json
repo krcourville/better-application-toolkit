@@ -23,7 +23,7 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
-    "stop-server": "lsof -ti :3000 | xargs kill -9"
+    "stop-server": "lsof -ti :3785 | xargs kill -9"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

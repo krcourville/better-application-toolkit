@@ -80,31 +80,37 @@ app.post('/users', (req, res) => {
 app.use(errorHandler());
 ```
 
-### Request Context
+### Async-local log context
+
+`logContextMiddleware` wraps each request in [`runWithLogContext`](https://nodejs.org/api/async_context.html#asynchronous-context-tracking) from `@batkit/logger/async-local` so your code can call `mergeLogContext`, use `getLogContext`, and attach a [`ContextualLoggerProvider`](../logger/README.md)—without `req.logger` or Express-specific types inside the logger package.
+
+**Background:** see the toolkit guide [Understanding AsyncLocalStorage](../../docs/async-local-storage.md).
 
 ```typescript
-import { contextMiddleware, getContext, setContextValue } from '@batkit/express-middleware';
+import { logContextMiddleware } from '@batkit/express-middleware';
+import { LoggerFacade } from '@batkit/logger';
+import { ContextualLoggerProvider, mergeLogContext } from '@batkit/logger/async-local';
+import { PinoLoggerProvider } from '@batkit/logger-pino';
 import express from 'express';
+import { randomUUID } from 'node:crypto';
+
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
 
 const app = express();
+app.use(express.json());
 
-app.use(contextMiddleware({
-  logger,
-  getUserId: (req) => req.user?.id // Extract user ID from request
-}));
+app.use(
+  logContextMiddleware({
+    initialContext: (req) => ({
+      requestId: req.get('x-request-id') ?? randomUUID(),
+    }),
+  }),
+);
 
-app.get('/users', (req, res) => {
-  // Access logger with automatic request ID
-  req.logger.info('Fetching users list');
-
-  // Add metadata to context
-  setContextValue('operation', 'list-users');
-
-  // Access context anywhere in the request chain
-  const context = getContext();
-  console.log(context?.requestId);
-
-  res.json({ users: [] });
+app.post('/orders/:id/submit', (req, res) => {
+  mergeLogContext({ transactionId: req.get('x-transaction-id') ?? randomUUID() });
+  LoggerFacade.getLogger('orders').info('Submitting'); // includes requestId + transactionId in structured output
+  res.status(204).end();
 });
 ```
 
@@ -139,37 +145,23 @@ app.use(errorHandler({
 
 ## API Reference
 
-### Context Middleware
+### Log context middleware
 
-#### `contextMiddleware(options): Middleware`
+#### `logContextMiddleware(options?): Middleware`
 
-Creates request context with AsyncLocalStorage.
+Runs `next()` inside `runWithLogContext(initialContext(req), …)` so nested async work can use `getLogContext` / `mergeLogContext` from `@batkit/logger/async-local`.
 
 **Options:**
 ```typescript
-interface ContextMiddlewareOptions {
-  logger: Logger; // Base logger for creating request-scoped loggers
-  generateRequestId?: () => string; // Custom request ID generator
-  getUserId?: (req: Request) => string | undefined; // Extract user ID
-  requestIdHeader?: string; // Header to read request ID from (default: 'x-request-id')
+interface LogContextMiddlewareOptions {
+  /** Default: `() => ({})` */
+  initialContext?: (req: Request) => Record<string, import('@batkit/logger').LogValue>;
 }
 ```
 
-**Returns:** Express middleware function
+**Returns:** Express middleware function. Mount it **early** (after body parsers if you need `req` fields).
 
-#### `getContext(): RequestContext | undefined`
-
-Get the current request context.
-
-**Returns:** Current `RequestContext` or `undefined` if not in a request
-
-#### `setContextValue(key: string, value: unknown): void`
-
-Add metadata to the current request context.
-
-#### `getContextValue(key: string): unknown`
-
-Get metadata from the current request context.
+**Note:** Prefer a synchronous call to `next()` inside the ALS scope. Avoid `async` middleware that `await`s before calling `next()` unless the entire downstream pipeline stays in the same async context.
 
 ### Error Handler
 
@@ -247,27 +239,36 @@ The default error formatter handles:
 
 ## Best Practices
 
-1. **Add `contextMiddleware` early** in the middleware chain
+1. **Add `logContextMiddleware` early** in the middleware chain when using async-local logging
 2. **Add `errorHandler` last** after all routes
 3. **Use `asyncHandler`** for async routes to catch errors
-4. **Use request logger** (`req.logger`) instead of base logger, for automatic request ID
+4. **Use `ContextualLoggerProvider`** with `LoggerFacade` (or your DI) so structured logs pick up ALS fields automatically
 5. **Throw `@batkit/errors`** for consistent error handling
 6. **Don't expose stack traces** in production (default behavior)
 
 ## Example: Complete Setup
 
 ```typescript
-import { contextMiddleware, errorHandler, asyncHandler } from '@batkit/express-middleware';
+import { errorHandler, asyncHandler, logContextMiddleware } from '@batkit/express-middleware';
 import { NotFoundError, ValidationError } from '@batkit/errors';
-import { createPinoLogger } from '@batkit/logger-pino';
+import { LoggerFacade } from '@batkit/logger';
+import { ContextualLoggerProvider } from '@batkit/logger/async-local';
+import { PinoLoggerProvider } from '@batkit/logger-pino';
 import express from 'express';
+import { randomUUID } from 'node:crypto';
+
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
 
 const app = express();
-const logger = createPinoLogger();
+const logger = LoggerFacade.getLogger('server');
 
 // Middleware
 app.use(express.json());
-app.use(contextMiddleware({ logger }));
+app.use(
+  logContextMiddleware({
+    initialContext: (req) => ({ requestId: req.get('x-request-id') ?? randomUUID() }),
+  }),
+);
 
 // Routes
 app.get('/health', (req, res) => {
@@ -275,7 +276,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/users/:id', asyncHandler(async (req, res) => {
-  req.logger.info('Fetching user', { userId: req.params.id });
+  LoggerFacade.getLogger('users').info('Fetching user', { userId: req.params.id });
 
   const user = await db.users.findById(req.params.id);
   if (!user) {
@@ -308,17 +309,7 @@ app.listen(PORT, () => {
 
 ## TypeScript
 
-Full TypeScript support with Express type extensions:
-
-```typescript
-import type { Request } from 'express';
-
-app.get('/test', (req: Request, res) => {
-  // TypeScript knows about these
-  req.context?.requestId;
-  req.logger?.info('Test');
-});
-```
+`logContextMiddleware` uses standard Express typings. Use `getLogContext()` from `@batkit/logger/async-local` when you need the current bag of log fields in a handler or service.
 
 ## License
 

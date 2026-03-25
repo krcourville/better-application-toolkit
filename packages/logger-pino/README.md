@@ -189,20 +189,27 @@ new PinoLoggerFactory(options?: PinoLoggerOptions)
 
 ## Integration with Express
 
-Use with [@batkit/express-middleware](../express-middleware):
+Use [`logContextMiddleware`](../express-middleware/README.md) with [`ContextualLoggerProvider`](../logger/README.md) from `@batkit/logger/async-local` so correlation fields flow into Pino output:
 
 ```typescript
-import { createPinoLogger } from '@batkit/logger-pino';
-import { contextMiddleware } from '@batkit/express-middleware';
+import { LoggerFacade } from '@batkit/logger';
+import { ContextualLoggerProvider } from '@batkit/logger/async-local';
+import { PinoLoggerProvider } from '@batkit/logger-pino';
+import { logContextMiddleware } from '@batkit/express-middleware';
 import express from 'express';
+import { randomUUID } from 'node:crypto';
+
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
 
 const app = express();
-const logger = createPinoLogger();
-
-app.use(contextMiddleware({ logger }));
+app.use(
+  logContextMiddleware({
+    initialContext: (req) => ({ requestId: req.get('x-request-id') ?? randomUUID() }),
+  }),
+);
 
 app.get('/users', (req, res) => {
-  req.logger.info('Fetching users list');
+  LoggerFacade.getLogger('api').info('Fetching users list');
   res.json({ users: [] });
 });
 ```

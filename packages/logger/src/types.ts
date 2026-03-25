@@ -48,6 +48,14 @@ export interface Logger {
   info: LogMethod;
   warn: LogMethod;
   error: LogMethod;
+
+  /**
+   * Merge fields into async-local log context for the current scope (same effect as
+   * `mergeLogContext` from `@batkit/logger/async-local`). Requires `runWithLogContext`
+   * (e.g. request middleware) and a provider that supports ALS (e.g. wrapped with
+   * `ContextualLoggerProvider`). Default console loggers throw with setup instructions.
+   */
+  mergeContext(partial: Record<string, LogValue>): void;
 }
 
 /**

@@ -26,12 +26,23 @@
         "types": "./dist/console.d.cts",
         "default": "./dist/console.cjs"
       }
+    },
+    "./async-local": {
+      "import": {
+        "types": "./dist/async-local.d.ts",
+        "default": "./dist/async-local.js"
+      },
+      "require": {
+        "types": "./dist/async-local.d.cts",
+        "default": "./dist/async-local.cjs"
+      }
     }
   },
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
-    "build": "tsup",
+    "build": "pnpm clean && tsup && tsup --config tsup.async-local.config.ts",
     "dev": "tsup --watch",
+    "dev:async-local": "tsup --watch --config tsup.async-local.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -51,6 +62,7 @@
   },
   "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/logger#readme",
   "devDependencies": {
+    "@types/node": "^22.10.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

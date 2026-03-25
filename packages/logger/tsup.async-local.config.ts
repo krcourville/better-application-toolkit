@@ -1,9 +1,9 @@
 import { defineConfig } from "tsup";
 
+/** Node-only subpath; run after main tsup so `clean` does not wipe combined dist. */
 export default defineConfig({
 	entry: {
-		index: "src/index.ts",
-		console: "src/console.ts",
+		"async-local": "src/async-local.ts",
 	},
 	format: ["esm", "cjs"],
 	dts: {
@@ -13,10 +13,9 @@ export default defineConfig({
 	},
 	splitting: false,
 	sourcemap: true,
-	// Keep false so `tsup --watch` does not delete `async-local.*` emitted by the other watcher.
 	clean: false,
 	treeshake: true,
 	minify: false,
 	target: "es2022",
-	platform: "neutral",
+	platform: "node",
 });
