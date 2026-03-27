@@ -70,8 +70,8 @@ const [a, b] = await Promise.all([handle("req-1"), handle("req-2")]);
 
 ## How BAT uses ALS
 
-- **`@batkit/logger/async-local`** exports `runWithLogContext`, `getLogContext`, `mergeLogContext`, and `ContextualLoggerProvider`. Together, they attach a **mutable** bag of log fields to the current async scope and merge those fields into every log call when you wrap your `LoggerProvider`.
-- **`@batkit/express-middleware`** exports `logContextMiddleware`, which calls `runWithLogContext` for each HTTP request (Express-specific, but the ALS primitives have **no** Express import).
+- **`@batkit/logger/async-local`** exports `runWithContext`, `getLogContext`, `mergeLogContext`, and `ContextualLoggerProvider`. Together, they attach a **mutable** bag of log fields to the current async scope and merge those fields into every log call when you wrap your `LoggerProvider`.
+- **`@batkit/express-middleware`** exports `logContextMiddleware`, which calls `runWithContext` for each HTTP request (Express-specific, but the ALS primitives have **no** Express import).
 - **`apps/express-api`**: wires a `ContextualLoggerProvider` around **Pino**, adds `logContextMiddleware` (sets `requestId`), and exposes **`POST /api/demo/fulfillment`** where `mergeLogContext({ transactionId })` runs after headers/body are known; deeper modules log **without** receiving those ids as parameters.
 
 For API details, see [`packages/logger/README.md`](../packages/logger/README.md) and [`packages/express-middleware/README.md`](../packages/express-middleware/README.md).

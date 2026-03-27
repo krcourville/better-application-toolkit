@@ -82,7 +82,7 @@ app.use(errorHandler());
 
 ### Async-local log context
 
-`logContextMiddleware` wraps each request in [`runWithLogContext`](https://nodejs.org/api/async_context.html#asynchronous-context-tracking) from `@batkit/logger/async-local` so your code can call `mergeLogContext`, use `getLogContext`, and attach a [`ContextualLoggerProvider`](../logger/README.md)—without `req.logger` or Express-specific types inside the logger package.
+`logContextMiddleware` wraps each request in [`runWithContext`](https://nodejs.org/api/async_context.html#asynchronous-context-tracking) from `@batkit/logger/async-local` so your code can call `mergeLogContext`, use `getLogContext`, and attach a [`ContextualLoggerProvider`](../logger/README.md)—without `req.logger` or Express-specific types inside the logger package.
 
 **Background:** see the toolkit guide [Understanding AsyncLocalStorage](../../docs/async-local-storage.md).
 
@@ -149,7 +149,7 @@ app.use(errorHandler({
 
 #### `logContextMiddleware(options?): Middleware`
 
-Runs `next()` inside `runWithLogContext(initialContext(req), …)` so nested async work can use `getLogContext` / `mergeLogContext` from `@batkit/logger/async-local`.
+Runs `next()` inside `runWithContext(initialContext(req), …)` so nested async work can use `getLogContext` / `mergeLogContext` from `@batkit/logger/async-local`.
 
 **Options:**
 ```typescript

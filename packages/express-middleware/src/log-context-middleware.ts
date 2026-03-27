@@ -1,5 +1,5 @@
 import type { LogValue } from '@batkit/logger';
-import { runWithLogContext } from '@batkit/logger/async-local';
+import { runWithContext } from '@batkit/logger/async-local';
 import type { NextFunction, Request, Response } from 'express';
 
 export type LogContextInitializer = (req: Request) => Record<string, LogValue>;
@@ -13,7 +13,7 @@ export interface LogContextMiddlewareOptions {
 }
 
 /**
- * Runs each request inside {@link runWithLogContext} so later code can use
+ * Runs each request inside {@link runWithContext} so later code can use
  * {@link mergeLogContext} and a {@link ContextualLoggerProvider} without
  * depending on Express (`req`) deep in the stack.
  *
@@ -27,6 +27,6 @@ export function logContextMiddleware(
   const initialContext = options.initialContext ?? (() => ({}));
 
   return (req: Request, _res: Response, next: NextFunction) => {
-    runWithLogContext(initialContext(req), () => next());
+    runWithContext(initialContext(req), () => next());
   };
 }

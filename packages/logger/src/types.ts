@@ -51,11 +51,18 @@ export interface Logger {
 
   /**
    * Merge fields into async-local log context for the current scope (same effect as
-   * `mergeLogContext` from `@batkit/logger/async-local`). Requires `runWithLogContext`
+   * `mergeLogContext` from `@batkit/logger/async-local`). Requires `runWithContext`
    * (e.g. request middleware) and a provider that supports ALS (e.g. wrapped with
    * `ContextualLoggerProvider`). Default console loggers throw with setup instructions.
    */
   mergeContext(partial: Record<string, LogValue>): void;
+
+  /**
+   * Run `fn` with merged async-local log context (same as `runWithContext` from
+   * `@batkit/logger/async-local`). Prefer this on the logger when you already have a
+   * logger reference and want to avoid a separate import.
+   */
+  runWithContext<T>(initial: Record<string, LogValue>, fn: () => T): T;
 }
 
 /**

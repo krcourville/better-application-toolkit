@@ -18,4 +18,11 @@ export default defineConfig({
 	minify: false,
 	target: "es2022",
 	platform: "node",
+	esbuildOptions(options) {
+		// Share one ALS instance with dist/log-context.{js,cjs} from the main tsup build.
+		options.external ??= [];
+		if (Array.isArray(options.external)) {
+			options.external.push("./log-context.js", "./log-context.cjs");
+		}
+	},
 });

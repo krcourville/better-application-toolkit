@@ -1,3 +1,4 @@
+import { runWithContext } from './log-context.js';
 import type { LogLevel, LogMethod, LogValue, Logger, LoggerProvider } from './types.js';
 
 /**
@@ -9,6 +10,8 @@ class ConsoleLogger implements Logger {
   public readonly warn: LogMethod;
   public readonly error: LogMethod;
 
+  public readonly runWithContext = runWithContext;
+
   constructor(name: string) {
     this.debug = console.debug.bind(console, `[${name}]`);
     this.info = console.info.bind(console, `[${name}]`);
@@ -17,7 +20,7 @@ class ConsoleLogger implements Logger {
     this.mergeContext = (_partial: Record<string, LogValue>) => {
       void _partial;
       throw new Error(
-        `Logger "${name}" mergeContext() requires ContextualLoggerProvider, runWithLogContext(), and a Node ALS-capable provider (see @batkit/logger/async-local).`
+        `Logger "${name}" mergeContext() requires ContextualLoggerProvider, runWithContext(), and a Node ALS-capable provider (see @batkit/logger/async-local).`
       );
     };
   }

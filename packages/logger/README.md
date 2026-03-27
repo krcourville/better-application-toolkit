@@ -71,14 +71,14 @@ try {
 
 **Background:** [Understanding AsyncLocalStorage](../../docs/async-local-storage.md)
 
-For request- or job-scoped fields (`requestId`, `transactionId`, etc.), use the **`@batkit/logger/async-local`** entry (built on `AsyncLocalStorage`). Wrap your `LoggerProvider` with `ContextualLoggerProvider`, run the scope with `runWithLogContext`, and optionally merge more fields later with `mergeLogContext`.
+For request- or job-scoped fields (`requestId`, `transactionId`, etc.), use the **`@batkit/logger/async-local`** entry (built on `AsyncLocalStorage`). Wrap your `LoggerProvider` with `ContextualLoggerProvider`, run the scope with `runWithContext`, and optionally merge more fields later with `mergeLogContext`.
 
 ```typescript
 import { LoggerFacade } from '@batkit/logger';
 import {
   ContextualLoggerProvider,
   mergeLogContext,
-  runWithLogContext,
+  runWithContext,
   getLogContext,
 } from '@batkit/logger/async-local';
 import { PinoLoggerProvider } from '@batkit/logger-pino';
@@ -88,7 +88,7 @@ LoggerFacade.setProvider(
   new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })),
 );
 
-runWithLogContext({ requestId: randomUUID() }, () => {
+runWithContext({ requestId: randomUUID() }, () => {
   mergeLogContext({ transactionId: 'txn-123' });
   const log = LoggerFacade.getLogger('payments');
   log.info('Captured'); // structured context includes both ids
@@ -96,7 +96,7 @@ runWithLogContext({ requestId: randomUUID() }, () => {
 });
 ```
 
-In Express, mount [`logContextMiddleware`](../express-middleware/README.md) early instead of calling `runWithLogContext` yourself at the top of every route.
+In Express, mount [`logContextMiddleware`](../express-middleware/README.md) early instead of calling `runWithContext` yourself at the top of every route.
 
 ### JSON / structured output
 
@@ -109,7 +109,7 @@ See exported types in `src/types.ts`. Highlights:
 - **`Logger`** — `debug` / `info` / `warn` / `error` use the `LogMethod` overloads (context-only, message + context, error + context, error + message + context).
 - **`LoggerProvider`** — `getLogger(name)`, `isLogLevelEnabled`.
 - **`LoggerFacade`** — `getLogger`, `setProvider`, `getProvider`, `configure`.
-- **Node-only:** `@batkit/logger/async-local` — `runWithLogContext`, `getLogContext`, `mergeLogContext`, `ContextualLoggerProvider`.
+- **Node-only:** `@batkit/logger/async-local` — `runWithContext`, `getLogContext`, `mergeLogContext`, `ContextualLoggerProvider`.
 
 ## Using with Other Implementations
 
@@ -131,7 +131,7 @@ logger.info('Using Pino implementation');
 
 ## Integration with Express
 
-Use [`logContextMiddleware`](../express-middleware/README.md) together with `ContextualLoggerProvider` so each request runs inside `runWithLogContext` and structured logs include correlation fields. See `apps/express-api` for a full example (`POST /api/demo/fulfillment`).
+Use [`logContextMiddleware`](../express-middleware/README.md) together with `ContextualLoggerProvider` so each request runs inside `runWithContext` and structured logs include correlation fields. See `apps/express-api` for a full example (`POST /api/demo/fulfillment`).
 
 ## Best Practices
 

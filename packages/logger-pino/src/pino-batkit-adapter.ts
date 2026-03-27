@@ -1,5 +1,5 @@
 import type { Logger as BatkitLogger, LogValue } from '@batkit/logger';
-import { mergeLogContext } from '@batkit/logger/async-local';
+import { mergeLogContext, runWithContext } from '@batkit/logger/async-local';
 import type { Logger as PinoLogger } from 'pino';
 
 type LogContext = Record<string, LogValue>;
@@ -74,5 +74,6 @@ export function adaptPinoToBatkitLogger(pinoChild: PinoLogger): BatkitLogger {
     warn: wrapLevel(pinoChild, 'warn'),
     error: wrapLevel(pinoChild, 'error'),
     mergeContext: mergeLogContext,
+    runWithContext,
   };
 }

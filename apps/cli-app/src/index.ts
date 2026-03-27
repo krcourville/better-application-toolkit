@@ -1,5 +1,3 @@
-import { runWithLogContext } from '@batkit/logger/async-local';
-
 import { LoggerFacade } from './logging.js';
 import { TransactionProcessor } from './transaction-processor.js';
 
@@ -9,8 +7,8 @@ const logger = LoggerFacade.getLogger('cli-app.main');
 
 /**
  * Tiny CLI flow that exercises named loggers and async-local context.
- * Wrap work in {@link runWithLogContext} so {@link Logger.mergeContext} has a store;
- * use {@link ContextualLoggerProvider} in logging.ts so ALS fields appear on every line.
+ * Use {@link Logger.runWithContext} (same implementation as `@batkit/logger/async-local`)
+ * so nested logs see merged fields; `logging.ts` uses {@link ContextualLoggerProvider}.
  */
 async function main(): Promise<void> {
   logger.info('Begin processing');
@@ -20,8 +18,7 @@ async function main(): Promise<void> {
   const processor = new TransactionProcessor();
 
   for (const transactionId of transactionIds) {
-    await runWithLogContext({ transactionId }, async () => {
-      LoggerFacade.getLogger('cli-app.main').info('CLI demo starting');
+    await logger.runWithContext({ transactionId }, async () => {
       await processor.process(transactionId);
     });
   }
@@ -29,4 +26,4 @@ async function main(): Promise<void> {
   logger.info('Finished processing');
 }
 
-await runWithLogContext({ correlationId }, main);
+await logger.runWithContext({ correlationId }, main);
