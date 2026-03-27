@@ -64,6 +64,25 @@ describe('runWithLogContext', () => {
     ]);
     expect(seen).toEqual(expect.arrayContaining(['a:a', 'b:b']));
   });
+
+  it('inherits parent store when nesting runWithLogContext', () => {
+    runWithLogContext({ requestId: 'outer' }, () => {
+      runWithLogContext({ transactionId: 't1' }, () => {
+        expect(getLogContext()).toEqual({
+          requestId: 'outer',
+          transactionId: 't1',
+        });
+      });
+    });
+  });
+
+  it('lets inner initial override the same key as parent', () => {
+    runWithLogContext({ id: 'parent' }, () => {
+      runWithLogContext({ id: 'child' }, () => {
+        expect(getLogContext()).toEqual({ id: 'child' });
+      });
+    });
+  });
 });
 
 describe('mergeLogContext', () => {

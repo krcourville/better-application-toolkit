@@ -24,9 +24,13 @@ function isError(value: unknown): value is Error {
 /**
  * Run `fn` with async-local log context. The returned store object is mutable;
  * {@link mergeLogContext} merges fields into it for the rest of this async chain.
+ *
+ * If there is already a store (nested call), {@link initial} is merged on top so outer
+ * fields (e.g. `correlationId`) remain unless {@link initial} overrides the same key.
  */
 export function runWithLogContext<T>(initial: Record<string, LogValue>, fn: () => T): T {
-  const store: Record<string, LogValue> = { ...initial };
+  const parent = logContextStorage.getStore();
+  const store: Record<string, LogValue> = parent ? { ...parent, ...initial } : { ...initial };
   return logContextStorage.run(store, fn);
 }
 

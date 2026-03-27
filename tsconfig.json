@@ -6,6 +6,7 @@
     { "path": "./packages/rfc9457" },
     { "path": "./packages/logger-pino" },
     { "path": "./packages/express-middleware" },
-    { "path": "./apps/express-api" }
+    { "path": "./apps/express-api" },
+    { "path": "./apps/cli-app" }
   ]
 }

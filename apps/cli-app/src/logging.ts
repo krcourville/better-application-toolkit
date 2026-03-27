@@ -1,4 +1,4 @@
-import { type Logger, LoggerFacade } from '@batkit/logger';
+import { LoggerFacade } from '@batkit/logger';
 import { PinoLoggerProvider } from '@batkit/logger-pino';
 import { ContextualLoggerProvider } from '@batkit/logger/async-local';
 
@@ -26,5 +26,4 @@ LoggerFacade.setProvider(
   )
 );
 
-/** App-level logger (uses contextual + Pino provider above). */
-export const logger: Logger = LoggerFacade.getLogger('express-api');
+export { LoggerFacade };

@@ -5,7 +5,7 @@
   "description": "Production-ready Express.js API demonstrating all @batkit packages",
   "type": "module",
   "scripts": {
-    "dev": "esno --env-file=.env.local --watch src/index.ts",
+    "dev": "esno --env-file=.env.dev --watch src/index.ts",
     "build": "tsc --build",
     "build:clean": "tsc --build --clean",
     "start": "node dist/index.js",

@@ -1,0 +1,29 @@
+{
+  "name": "cli-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal terminal demo of @batkit/logger facade (no HTTP server)",
+  "type": "module",
+  "scripts": {
+    "dev": "esno --env-file=.env.dev src/index.ts",
+    "build": "tsc --build",
+    "build:clean": "tsc --build --clean",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@batkit/logger": "workspace:*",
+    "@batkit/logger-pino": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "esno": "^4.8.0",
+    "pino-pretty": "^13.0.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
