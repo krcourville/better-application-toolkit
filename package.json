@@ -24,7 +24,7 @@
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
     "stop-server": "lsof -ti :3785 | xargs kill -9",
-    "cli": "pnpm --filter cli-app dev"
+    "cli": "turbo run build --filter=cli-app... && pnpm --filter cli-app dev"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
