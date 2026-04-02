@@ -32,7 +32,6 @@ logs/
 *.log
 
 # Cache
-.turbo/
 .cache/
 .eslintcache
 

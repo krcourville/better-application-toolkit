@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * RFC 9457 defines the "Problem Details" format for HTTP APIs.
@@ -15,7 +15,7 @@ export const ProblemDetailsSchema = z.object({
    * When dereferenced, it should provide human-readable documentation.
    * Defaults to "about:blank" when not present.
    */
-  type: z.string().default('about:blank'),
+  type: z.string().default("about:blank"),
 
   /**
    * A short, human-readable summary of the problem type.
@@ -60,7 +60,7 @@ export type ExtendedProblemDetails = z.infer<typeof ExtendedProblemDetailsSchema
 /**
  * Content type header value for Problem Details JSON.
  */
-export const PROBLEM_DETAILS_CONTENT_TYPE = 'application/problem+json';
+export const PROBLEM_DETAILS_CONTENT_TYPE = "application/problem+json";
 
 /**
  * Validates a problem details object against the RFC 9457 schema.
@@ -84,7 +84,7 @@ export const PROBLEM_DETAILS_CONTENT_TYPE = 'application/problem+json';
  * ```
  */
 export function validateProblemDetails(
-  data: unknown
+  data: unknown,
 ): z.SafeParseReturnType<unknown, ProblemDetails> {
   return ProblemDetailsSchema.safeParse(data);
 }
@@ -106,7 +106,7 @@ export function validateProblemDetails(
  * ```
  */
 export function validateExtendedProblemDetails(
-  data: unknown
+  data: unknown,
 ): z.SafeParseReturnType<unknown, ExtendedProblemDetails> {
   return ExtendedProblemDetailsSchema.safeParse(data);
 }
@@ -127,10 +127,13 @@ export function validateExtendedProblemDetails(
  * ```
  */
 export function createProblemDetails(
-  details: Partial<ProblemDetails> & Pick<ProblemDetails, 'status'>
+  details: Partial<ProblemDetails> & Pick<ProblemDetails, "status">,
 ): ProblemDetails {
+  if (details.status === undefined) {
+    throw new Error("status is required");
+  }
   return ProblemDetailsSchema.parse({
-    type: 'about:blank',
+    type: "about:blank",
     ...details,
   });
 }
@@ -154,10 +157,10 @@ export function createProblemDetails(
  * ```
  */
 export function createExtendedProblemDetails<T extends Record<string, unknown>>(
-  details: Partial<ProblemDetails> & Pick<ProblemDetails, 'status'> & T
+  details: Partial<ProblemDetails> & Pick<ProblemDetails, "status"> & T,
 ): ExtendedProblemDetails & T {
   return ExtendedProblemDetailsSchema.parse({
-    type: 'about:blank',
+    type: "about:blank",
     ...details,
   }) as ExtendedProblemDetails & T;
 }
@@ -179,11 +182,11 @@ export function createExtendedProblemDetails<T extends Record<string, unknown>>(
  * ```
  */
 export function createProblemDetailsHeaders(
-  additionalHeaders: Record<string, string> = {}
+  additionalHeaders: Record<string, string> = {},
 ): Record<string, string> {
   return {
-    'Content-Type': PROBLEM_DETAILS_CONTENT_TYPE,
     ...additionalHeaders,
+    "Content-Type": PROBLEM_DETAILS_CONTENT_TYPE,
   };
 }
 

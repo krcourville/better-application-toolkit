@@ -34,24 +34,24 @@ A high-performance logger implementation using [Pino](https://getpino.io/), one 
 ### Basic Usage
 
 ```typescript
-import { createPinoLogger } from '@batkit/logger-pino';
-import { LogLevel } from '@batkit/logger';
+import { createPinoLogger } from "@batkit/logger-pino";
+import { LogLevel } from "@batkit/logger";
 
 const logger = createPinoLogger({ level: LogLevel.INFO });
 
-logger.info('Application started');
-logger.warn('Low disk space', { available: '10GB' });
-logger.error('Database connection failed', new Error('Connection timeout'));
+logger.info("Application started");
+logger.warn("Low disk space", { available: "10GB" });
+logger.error("Database connection failed", new Error("Connection timeout"));
 ```
 
 ### Development Mode (Pretty Output)
 
 ```typescript
-import { createDevLogger } from '@batkit/logger-pino';
+import { createDevLogger } from "@batkit/logger-pino";
 
-const logger = createDevLogger({ app: 'my-api' });
+const logger = createDevLogger({ app: "my-api" });
 
-logger.info('Server started on port 3000');
+logger.info("Server started on port 3000");
 // Output (colorized):
 // [14:23:45 EST] INFO: Server started on port 3000
 //     app: "my-api"
@@ -60,14 +60,14 @@ logger.info('Server started on port 3000');
 ### Production Mode (JSON + Redaction)
 
 ```typescript
-import { createProdLogger } from '@batkit/logger-pino';
+import { createProdLogger } from "@batkit/logger-pino";
 
-const logger = createProdLogger({ service: 'auth-api' });
+const logger = createProdLogger({ service: "auth-api" });
 
-logger.info('User logged in', {
-  userId: '123',
-  password: 'secret123', // Will be redacted
-  email: 'user@example.com'
+logger.info("User logged in", {
+  userId: "123",
+  password: "secret123", // Will be redacted
+  email: "user@example.com",
 });
 // Output: {"level":"info","service":"auth-api","userId":"123","password":"[Redacted]","email":"user@example.com"}
 ```
@@ -75,55 +75,55 @@ logger.info('User logged in', {
 ### Custom Configuration
 
 ```typescript
-import { createPinoLogger } from '@batkit/logger-pino';
-import { LogLevel } from '@batkit/logger';
+import { createPinoLogger } from "@batkit/logger-pino";
+import { LogLevel } from "@batkit/logger";
 
 const logger = createPinoLogger({
   level: LogLevel.DEBUG,
-  context: { app: 'my-service', version: '1.0.0' },
+  context: { app: "my-service", version: "1.0.0" },
   transport: {
-    target: 'pino-pretty',
+    target: "pino-pretty",
     options: {
       colorize: true,
-      translateTime: 'yyyy-mm-dd HH:MM:ss',
-      ignore: 'pid,hostname',
+      translateTime: "yyyy-mm-dd HH:MM:ss",
+      ignore: "pid,hostname",
     },
   },
-  redact: ['password', 'apiKey', 'token', 'ssn'],
+  redact: ["password", "apiKey", "token", "ssn"],
 });
 ```
 
 ### Using the Factory
 
 ```typescript
-import { PinoLoggerFactory } from '@batkit/logger-pino';
-import { LogLevel } from '@batkit/logger';
+import { PinoLoggerFactory } from "@batkit/logger-pino";
+import { LogLevel } from "@batkit/logger";
 
 const factory = new PinoLoggerFactory({
   level: LogLevel.INFO,
-  context: { service: 'api' },
+  context: { service: "api" },
 });
 
-const authLogger = factory.createLogger({ module: 'auth' });
-const userLogger = factory.createLogger({ module: 'users' });
+const authLogger = factory.createLogger({ module: "auth" });
+const userLogger = factory.createLogger({ module: "users" });
 
-authLogger.info('Login attempt'); // Includes: service='api', module='auth'
-userLogger.info('User created'); // Includes: service='api', module='users'
+authLogger.info("Login attempt"); // Includes: service='api', module='auth'
+userLogger.info("User created"); // Includes: service='api', module='users'
 ```
 
 ### Child Loggers
 
 ```typescript
-import { createPinoLogger } from '@batkit/logger-pino';
+import { createPinoLogger } from "@batkit/logger-pino";
 
-const logger = createPinoLogger({ context: { app: 'api' } });
+const logger = createPinoLogger({ context: { app: "api" } });
 
 //Create request-scoped logger
 function handleRequest(requestId: string) {
   const reqLogger = logger.child({ requestId });
 
-  reqLogger.info('Processing request');
-  reqLogger.info('Request complete');
+  reqLogger.info("Processing request");
+  reqLogger.info("Request complete");
   // All logs include requestId
 }
 ```
@@ -137,6 +137,7 @@ function handleRequest(requestId: string) {
 Creates a Pino logger instance.
 
 **Parameters:**
+
 - `options?: PinoLoggerOptions`
 
 **Returns:** `Logger` instance
@@ -146,6 +147,7 @@ Creates a Pino logger instance.
 Creates a Pino logger configured for development (pretty printing, debug level).
 
 **Parameters:**
+
 - `context?: LoggerContext`
 
 **Returns:** `Logger` instance
@@ -155,6 +157,7 @@ Creates a Pino logger configured for development (pretty printing, debug level).
 Creates a Pino logger configured for production (JSON output, info level, redaction).
 
 **Parameters:**
+
 - `context?: LoggerContext`
 
 **Returns:** `Logger` instance
@@ -167,9 +170,9 @@ Creates a Pino logger configured for production (JSON output, info level, redact
 interface PinoLoggerOptions {
   level?: LogLevel | string;
   context?: LoggerContext;
-  transport?: PinoOptions['transport'];
+  transport?: PinoOptions["transport"];
   redact?: string[]; // Paths to redact
-  pinoOptions?: Omit<PinoOptions, 'level' | 'transport'>;
+  pinoOptions?: Omit<PinoOptions, "level" | "transport">;
 }
 ```
 
@@ -192,24 +195,24 @@ new PinoLoggerFactory(options?: PinoLoggerOptions)
 Use [`logContextMiddleware`](../express-middleware/README.md) with [`ContextualLoggerProvider`](../logger/README.md) from `@batkit/logger/async-local` so correlation fields flow into Pino output:
 
 ```typescript
-import { LoggerFacade } from '@batkit/logger';
-import { ContextualLoggerProvider } from '@batkit/logger/async-local';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
-import { logContextMiddleware } from '@batkit/express-middleware';
-import express from 'express';
-import { randomUUID } from 'node:crypto';
+import { LoggerFacade } from "@batkit/logger";
+import { ContextualLoggerProvider } from "@batkit/logger/async-local";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
+import { logContextMiddleware } from "@batkit/express-middleware";
+import express from "express";
+import { randomUUID } from "node:crypto";
 
-LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
 
 const app = express();
 app.use(
   logContextMiddleware({
-    initialContext: (req) => ({ requestId: req.get('x-request-id') ?? randomUUID() }),
+    initialContext: (req) => ({ requestId: req.get("x-request-id") ?? randomUUID() }),
   }),
 );
 
-app.get('/users', (req, res) => {
-  LoggerFacade.getLogger('api').info('Fetching users list');
+app.get("/users", (req, res) => {
+  LoggerFacade.getLogger("api").info("Fetching users list");
   res.json({ users: [] });
 });
 ```
@@ -221,21 +224,22 @@ Pino supports automatic redaction of sensitive fields:
 ```typescript
 const logger = createPinoLogger({
   redact: {
-    paths: ['password', 'creditCard', 'ssn', 'req.headers.authorization'],
-    censor: '[REDACTED]',
+    paths: ["password", "creditCard", "ssn", "req.headers.authorization"],
+    censor: "[REDACTED]",
   },
 });
 
-logger.info('User data', {
-  username: 'john',
-  password: 'secret', // Will show as '[REDACTED]'
-  email: 'john@example.com',
+logger.info("User data", {
+  username: "john",
+  password: "secret", // Will show as '[REDACTED]'
+  email: "john@example.com",
 });
 ```
 
 ## Performance
 
 Pino is one of the fastest loggers for Node.js:
+
 - Asynchronous logging by default
 - Minimal overhead
 - Fast JSON serialization

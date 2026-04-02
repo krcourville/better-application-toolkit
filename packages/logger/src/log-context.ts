@@ -1,5 +1,5 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-import type { LogValue } from './types.js';
+import { AsyncLocalStorage } from "node:async_hooks";
+import type { LogValue } from "./types.js";
 
 const logContextStorage = new AsyncLocalStorage<Record<string, LogValue>>();
 
@@ -49,7 +49,7 @@ export function mergeLogContext(partial: Record<string, LogValue>): void {
   const store = logContextStorage.getStore();
   if (store === undefined) {
     throw new Error(
-      'mergeLogContext() was called with no async log context; wrap the scope with runWithContext() (e.g. request middleware).'
+      "mergeLogContext() was called with no async log context; wrap the scope with runWithContext() (e.g. request middleware).",
     );
   }
   Object.assign(store, partial);

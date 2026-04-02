@@ -1,6 +1,6 @@
-import type { LogValue } from '@batkit/logger';
-import { runWithContext } from '@batkit/logger/async-local';
-import type { NextFunction, Request, Response } from 'express';
+import type { LogValue } from "@batkit/logger";
+import { runWithContext } from "@batkit/logger/async-local";
+import type { NextFunction, Request, Response } from "express";
 
 export type LogContextInitializer = (req: Request) => Record<string, LogValue>;
 
@@ -22,7 +22,7 @@ export interface LogContextMiddlewareOptions {
  * without keeping the rest of the work in the same async context.
  */
 export function logContextMiddleware(
-  options: LogContextMiddlewareOptions = {}
+  options: LogContextMiddlewareOptions = {},
 ): (req: Request, res: Response, next: NextFunction) => void {
   const initialContext = options.initialContext ?? (() => ({}));
 

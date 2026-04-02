@@ -2,6 +2,29 @@
   "name": "@batkit/logger-pino",
   "version": "0.1.0",
   "description": "Pino.js implementation of @batkit/logger facade for Node.js and browser",
+  "keywords": [
+    "logger",
+    "logging",
+    "pino",
+    "structured-logging",
+    "typescript"
+  ],
+  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/logger-pino#readme",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
+  },
+  "license": "MIT",
+  "author": "Ken Courville",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
+    "directory": "packages/logger-pino"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -18,36 +41,23 @@
       }
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "build": "pnpm clean && vp pack",
+    "dev": "vp pack -w",
+    "test": "vp test",
+    "test:watch": "vp test -w",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check .",
+    "lint": "vp check .",
     "clean": "rm -rf dist"
   },
-  "keywords": ["logger", "logging", "pino", "structured-logging", "typescript"],
-  "author": "Ken Courville",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
-    "directory": "packages/logger-pino"
-  },
-  "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
-  },
-  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/logger-pino#readme",
   "dependencies": {
     "@batkit/logger": "workspace:*",
     "pino": "^9.5.0"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite-plus": "^0.1.14",
+    "vitest": "^4.1.2"
   },
   "engines": {
     "node": ">=22.0.0"

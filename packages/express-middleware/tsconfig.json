@@ -8,9 +8,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [
-    { "path": "../errors" },
-    { "path": "../logger" },
-    { "path": "../rfc9457" }
-  ]
+  "references": [{ "path": "../errors" }, { "path": "../logger" }, { "path": "../rfc9457" }]
 }

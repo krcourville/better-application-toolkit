@@ -1,6 +1,6 @@
-import { ValidationError } from '@batkit/errors';
-import { LoggerFacade } from '@batkit/logger';
-import { delay } from '../lib/async-utils';
+import { ValidationError } from "@batkit/errors";
+import { LoggerFacade } from "@batkit/logger";
+import { delay } from "../lib/async-utils";
 
 export type FulfillmentItem = { sku: string; qty: number };
 
@@ -11,13 +11,13 @@ export type FulfillmentItem = { sku: string; qty: number };
  */
 export class FulfillmentPipeline {
   /** In-memory stock for demo only (not reset between requests). */
-  readonly #inventory = new Map<string, number>([['SKU-1', 100]]);
+  readonly #inventory = new Map<string, number>([["SKU-1", 100]]);
 
-  private readonly logger = LoggerFacade.getLogger('fulfillment.pipeline');
+  private readonly logger = LoggerFacade.getLogger("fulfillment.pipeline");
 
-  async fulfill(orderId: string, items: FulfillmentItem[]): Promise<{ status: 'fulfilled' }> {
+  async fulfill(orderId: string, items: FulfillmentItem[]): Promise<{ status: "fulfilled" }> {
     this.logger.mergeContext({ orderId });
-    this.logger.info('Pipeline start', { lineCount: items.length });
+    this.logger.info("Pipeline start", { lineCount: items.length });
 
     await delay(15);
 
@@ -27,15 +27,15 @@ export class FulfillmentPipeline {
 
     await delay(10);
 
-    this.logger.info('Payment stub succeeded');
-    this.logger.info('Pipeline complete');
-    return { status: 'fulfilled' };
+    this.logger.info("Payment stub succeeded");
+    this.logger.info("Pipeline complete");
+    return { status: "fulfilled" };
   }
 
   #reserveLine(item: FulfillmentItem): void {
     const available = this.#inventory.get(item.sku) ?? 0;
     if (available < item.qty) {
-      throw new ValidationError('Insufficient stock', [
+      throw new ValidationError("Insufficient stock", [
         {
           field: item.sku,
           message: `Only ${available} available, requested ${item.qty}`,
@@ -44,7 +44,7 @@ export class FulfillmentPipeline {
       ]);
     }
     this.#inventory.set(item.sku, available - item.qty);
-    this.logger.info('Stock reserved', {
+    this.logger.info("Stock reserved", {
       sku: item.sku,
       qty: item.qty,
     });

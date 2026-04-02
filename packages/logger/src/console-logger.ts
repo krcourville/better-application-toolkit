@@ -1,5 +1,5 @@
-import { runWithContext } from './log-context.js';
-import type { LogLevel, LogMethod, LogValue, Logger, LoggerProvider } from './types.js';
+import { runWithContext } from "./log-context.js";
+import type { LogLevel, LogMethod, LogValue, Logger, LoggerProvider } from "./types.js";
 
 /**
  * Simple console-based logger that delegates to console methods
@@ -20,7 +20,7 @@ class ConsoleLogger implements Logger {
     this.mergeContext = (_partial: Record<string, LogValue>) => {
       void _partial;
       throw new Error(
-        `Logger "${name}" mergeContext() requires ContextualLoggerProvider, runWithContext(), and a Node ALS-capable provider (see @batkit/logger/async-local).`
+        `Logger "${name}" mergeContext() requires ContextualLoggerProvider, runWithContext(), and a Node ALS-capable provider (see @batkit/logger/async-local).`,
       );
     };
   }

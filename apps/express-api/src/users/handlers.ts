@@ -83,9 +83,7 @@ export const userHandlers = {
     const userData = result.data;
 
     // Check for duplicate email
-    const existingUser = Array.from(users.values()).find(
-      (u) => u.email === userData.email
-    );
+    const existingUser = Array.from(users.values()).find((u) => u.email === userData.email);
     if (existingUser) {
       throw new ValidationError("User with this email already exists", [
         {
@@ -144,9 +142,7 @@ export const userHandlers = {
 
     // Check for duplicate email if email is being updated
     if (updates.email && updates.email !== user.email) {
-      const existingUser = Array.from(users.values()).find(
-        (u) => u.email === updates.email
-      );
+      const existingUser = Array.from(users.values()).find((u) => u.email === updates.email);
       if (existingUser) {
         throw new ValidationError("Email already in use", [
           {

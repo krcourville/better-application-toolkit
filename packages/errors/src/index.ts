@@ -1,5 +1,5 @@
-import type { ExtendedProblemDetails } from '@batkit/rfc9457';
-import { createExtendedProblemDetails } from '@batkit/rfc9457';
+import type { ExtendedProblemDetails } from "@batkit/rfc9457";
+import { createExtendedProblemDetails } from "@batkit/rfc9457";
 
 /**
  * Base class for all application errors.
@@ -36,12 +36,12 @@ export class AppError extends Error {
     message: string,
     code?: string,
     details?: Record<string, unknown>,
-    isOperational = true
+    isOperational = true,
   ) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
-    this.code = code || this.constructor.name.replace(/Error$/, '').toUpperCase();
+    this.code = code || this.constructor.name.replace(/Error$/, "").toUpperCase();
     this.details = details;
     this.isOperational = isOperational;
     this.timestamp = new Date();
@@ -87,8 +87,8 @@ export class AppError extends Error {
  * 400 Bad Request - The request was malformed or invalid
  */
 export class BadRequestError extends AppError {
-  constructor(message = 'Bad Request', details?: Record<string, unknown>) {
-    super(400, message, 'BAD_REQUEST', details);
+  constructor(message = "Bad Request", details?: Record<string, unknown>) {
+    super(400, message, "BAD_REQUEST", details);
   }
 }
 
@@ -105,16 +105,16 @@ export class ValidationError extends AppError {
 
   constructor(
     message: string,
-    validationErrors: Array<{ field: string; message: string; value?: unknown }>
+    validationErrors: Array<{ field: string; message: string; value?: unknown }>,
   ) {
-    super(400, message, 'VALIDATION_ERROR', { validationErrors });
+    super(400, message, "VALIDATION_ERROR", { validationErrors });
     this.validationErrors = validationErrors;
   }
 
   override toRFC9457(): ExtendedProblemDetails {
     return createExtendedProblemDetails({
-      type: 'error:validation',
-      title: 'Validation Error',
+      type: "error:validation",
+      title: "Validation Error",
       status: 400,
       detail: this.message,
       validationErrors: this.validationErrors,
@@ -126,8 +126,8 @@ export class ValidationError extends AppError {
  * 401 Unauthorized - Authentication is required or failed
  */
 export class UnauthorizedError extends AppError {
-  constructor(message = 'Unauthorized', details?: Record<string, unknown>) {
-    super(401, message, 'UNAUTHORIZED', details);
+  constructor(message = "Unauthorized", details?: Record<string, unknown>) {
+    super(401, message, "UNAUTHORIZED", details);
   }
 }
 
@@ -138,8 +138,8 @@ export class ForbiddenError extends AppError {
   public readonly resource?: string;
   public readonly action?: string;
 
-  constructor(message = 'Forbidden', resource?: string, action?: string) {
-    super(403, message, 'FORBIDDEN', { resource, action });
+  constructor(message = "Forbidden", resource?: string, action?: string) {
+    super(403, message, "FORBIDDEN", { resource, action });
     this.resource = resource;
     this.action = action;
   }
@@ -155,15 +155,15 @@ export class NotFoundError extends AppError {
 
   constructor(entityName: string, entityId: string | number) {
     const message = `${entityName} with id '${entityId}' was not found`;
-    super(404, message, 'NOT_FOUND', { entityName, entityId });
+    super(404, message, "NOT_FOUND", { entityName, entityId });
     this.entityName = entityName;
     this.entityId = entityId;
   }
 
   override toRFC9457(): ExtendedProblemDetails {
     return createExtendedProblemDetails({
-      type: 'error:not-found',
-      title: 'Resource Not Found',
+      type: "error:not-found",
+      title: "Resource Not Found",
       status: 404,
       detail: this.message,
       entityName: this.entityName,
@@ -180,7 +180,7 @@ export class ConflictError extends AppError {
   public readonly conflictingId?: string | number;
 
   constructor(message: string, conflictingResource?: string, conflictingId?: string | number) {
-    super(409, message, 'CONFLICT', { conflictingResource, conflictingId });
+    super(409, message, "CONFLICT", { conflictingResource, conflictingId });
     this.conflictingResource = conflictingResource;
     this.conflictingId = conflictingId;
   }
@@ -191,7 +191,7 @@ export class ConflictError extends AppError {
  */
 export class UnprocessableEntityError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super(422, message, 'UNPROCESSABLE_ENTITY', details);
+    super(422, message, "UNPROCESSABLE_ENTITY", details);
   }
 }
 
@@ -202,16 +202,16 @@ export class TooManyRequestsError extends AppError {
   public readonly retryAfter?: number;
   public readonly limit?: number;
 
-  constructor(message = 'Too Many Requests', retryAfter?: number, limit?: number) {
-    super(429, message, 'TOO_MANY_REQUESTS', { retryAfter, limit });
+  constructor(message = "Too Many Requests", retryAfter?: number, limit?: number) {
+    super(429, message, "TOO_MANY_REQUESTS", { retryAfter, limit });
     this.retryAfter = retryAfter;
     this.limit = limit;
   }
 
   override toRFC9457(): ExtendedProblemDetails {
     return createExtendedProblemDetails({
-      type: 'error:too-many-requests',
-      title: 'Too Many Requests',
+      type: "error:too-many-requests",
+      title: "Too Many Requests",
       status: 429,
       detail: this.message,
       ...(this.retryAfter && { retryAfter: this.retryAfter }),
@@ -224,8 +224,8 @@ export class TooManyRequestsError extends AppError {
  * 500 Internal Server Error - An unexpected error occurred
  */
 export class InternalServerError extends AppError {
-  constructor(message = 'Internal Server Error', details?: Record<string, unknown>) {
-    super(500, message, 'INTERNAL_SERVER_ERROR', details);
+  constructor(message = "Internal Server Error", details?: Record<string, unknown>) {
+    super(500, message, "INTERNAL_SERVER_ERROR", details);
   }
 }
 
@@ -233,8 +233,8 @@ export class InternalServerError extends AppError {
  * 501 Not Implemented - The functionality is not implemented yet
  */
 export class NotImplementedError extends AppError {
-  constructor(message = 'Not Implemented', feature?: string) {
-    super(501, message, 'NOT_IMPLEMENTED', { feature });
+  constructor(message = "Not Implemented", feature?: string) {
+    super(501, message, "NOT_IMPLEMENTED", { feature });
   }
 }
 
@@ -242,8 +242,8 @@ export class NotImplementedError extends AppError {
  * 502 Bad Gateway - Invalid response from upstream server
  */
 export class BadGatewayError extends AppError {
-  constructor(message = 'Bad Gateway', upstream?: string) {
-    super(502, message, 'BAD_GATEWAY', { upstream });
+  constructor(message = "Bad Gateway", upstream?: string) {
+    super(502, message, "BAD_GATEWAY", { upstream });
   }
 }
 
@@ -253,15 +253,15 @@ export class BadGatewayError extends AppError {
 export class ServiceUnavailableError extends AppError {
   public readonly retryAfter?: number;
 
-  constructor(message = 'Service Unavailable', retryAfter?: number) {
-    super(503, message, 'SERVICE_UNAVAILABLE', { retryAfter });
+  constructor(message = "Service Unavailable", retryAfter?: number) {
+    super(503, message, "SERVICE_UNAVAILABLE", { retryAfter });
     this.retryAfter = retryAfter;
   }
 
   override toRFC9457(): ExtendedProblemDetails {
     return createExtendedProblemDetails({
-      type: 'error:service-unavailable',
-      title: 'Service Unavailable',
+      type: "error:service-unavailable",
+      title: "Service Unavailable",
       status: 503,
       detail: this.message,
       ...(this.retryAfter && { retryAfter: this.retryAfter }),
@@ -273,8 +273,8 @@ export class ServiceUnavailableError extends AppError {
  * 504 Gateway Timeout - Upstream server did not respond in time
  */
 export class GatewayTimeoutError extends AppError {
-  constructor(message = 'Gateway Timeout', upstream?: string, timeout?: number) {
-    super(504, message, 'GATEWAY_TIMEOUT', { upstream, timeout });
+  constructor(message = "Gateway Timeout", upstream?: string, timeout?: number) {
+    super(504, message, "GATEWAY_TIMEOUT", { upstream, timeout });
   }
 }
 
@@ -341,7 +341,7 @@ export function getErrorCode(error: unknown): string {
     return error.code;
   }
   if (error instanceof Error) {
-    return 'UNKNOWN_ERROR';
+    return "UNKNOWN_ERROR";
   }
-  return 'UNKNOWN';
+  return "UNKNOWN";
 }

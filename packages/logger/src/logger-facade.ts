@@ -1,5 +1,5 @@
-import { ConsoleLoggerProvider } from './console-logger.js';
-import type { Logger, LoggerProvider } from './types.js';
+import { ConsoleLoggerProvider } from "./console-logger.js";
+import type { Logger, LoggerProvider } from "./types.js";
 
 /**
  * Singleton facade for logging with pluggable providers

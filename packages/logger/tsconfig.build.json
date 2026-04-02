@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    // Language and Environment  
+    // Language and Environment
     "target": "ES2022",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",

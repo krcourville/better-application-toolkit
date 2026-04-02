@@ -1,2 +1,2 @@
-export { errorsContract } from './contract';
-export { errorHandlers } from './handlers';
+export { errorsContract } from "./contract";
+export { errorHandlers } from "./handlers";

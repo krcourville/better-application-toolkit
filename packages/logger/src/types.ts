@@ -1,7 +1,7 @@
 /**
  * Log levels
  */
-export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL";
 
 /**
  * Type-safe log values (only serializable types)

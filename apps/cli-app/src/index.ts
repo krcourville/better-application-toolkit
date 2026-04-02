@@ -1,9 +1,9 @@
-import { LoggerFacade } from './logging.js';
-import { TransactionProcessor } from './transaction-processor.js';
+import { LoggerFacade } from "./logging.js";
+import { TransactionProcessor } from "./transaction-processor.js";
 
-const correlationId = 'AA-1234567890';
+const correlationId = "AA-1234567890";
 
-const logger = LoggerFacade.getLogger('cli-app.main');
+const logger = LoggerFacade.getLogger("cli-app.main");
 
 /**
  * Tiny CLI flow that exercises named loggers and async-local context.
@@ -11,8 +11,8 @@ const logger = LoggerFacade.getLogger('cli-app.main');
  * so nested logs see merged fields; `logging.ts` uses {@link ContextualLoggerProvider}.
  */
 async function main(): Promise<void> {
-  logger.info('Begin processing');
-  const transactionIds = ['111', '222', '333'];
+  logger.info("Begin processing");
+  const transactionIds = ["111", "222", "333"];
   logger.info(`Found ${transactionIds.length} transactions`);
 
   const processor = new TransactionProcessor();
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
     });
   }
 
-  logger.info('Finished processing');
+  logger.info("Finished processing");
 }
 
 await logger.runWithContext({ correlationId }, main);

@@ -1,15 +1,15 @@
-import type { Logger as BatkitLogger, LogLevel, LoggerProvider } from '@batkit/logger';
-import { type LoggerOptions, type Logger as PinoLogger, pino } from 'pino';
+import type { Logger as BatkitLogger, LogLevel, LoggerProvider } from "@batkit/logger";
+import { type LoggerOptions, type Logger as PinoLogger, pino } from "pino";
 
-import { adaptPinoToBatkitLogger } from './pino-batkit-adapter.js';
+import { adaptPinoToBatkitLogger } from "./pino-batkit-adapter.js";
 
 /** Lowercase names pino accepts in {@link PinoLogger.isLevelEnabled}. */
-const BATKIT_TO_PINO: Record<LogLevel, 'debug' | 'info' | 'warn' | 'error' | 'fatal'> = {
-  DEBUG: 'debug',
-  INFO: 'info',
-  WARN: 'warn',
-  ERROR: 'error',
-  FATAL: 'fatal',
+const BATKIT_TO_PINO: Record<LogLevel, "debug" | "info" | "warn" | "error" | "fatal"> = {
+  DEBUG: "debug",
+  INFO: "info",
+  WARN: "warn",
+  ERROR: "error",
+  FATAL: "fatal",
 };
 
 /**
@@ -31,4 +31,4 @@ export class PinoLoggerProvider implements LoggerProvider {
   }
 }
 
-export { adaptPinoToBatkitLogger } from './pino-batkit-adapter.js';
+export { adaptPinoToBatkitLogger } from "./pino-batkit-adapter.js";

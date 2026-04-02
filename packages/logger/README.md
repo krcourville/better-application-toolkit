@@ -14,7 +14,7 @@ A lightweight logger facade that provides a consistent logging interface for bot
 
 ### Developing in this monorepo
 
-This package builds **two** outputs (`index` / `console` and the Node-only `@batkit/logger/async-local`). From the repo root, `pnpm dev` runs both watch processes for `@batkit/logger` via **Turborepo’s [`with`](https://turbo.build/repo/docs/reference/configuration#with)** (`dev` + `dev:async-local`). If you run `pnpm dev` only inside `packages/logger`, start `pnpm dev:async-local` in a second terminal as well.
+This package builds **two** outputs (`index` / `console` and the Node-only `@batkit/logger/async-local`) using **tsup** (see `tsup.config.ts` and `tsup.async-local.config.ts`). The `dev` script runs **`concurrently`** so both `tsup --watch` processes start together. From the **repo root**, [`vp run dev`](https://viteplus.dev/guide/run) starts the Express reference app and workspace watchers (including this package). From **`packages/logger`**, run `vp run dev` for logger-only watch mode.
 
 ## Features
 
@@ -33,28 +33,28 @@ This package builds **two** outputs (`index` / `console` and the Node-only `@bat
 ### Basic Logging
 
 ```typescript
-import { LoggerFacade } from '@batkit/logger';
+import { LoggerFacade } from "@batkit/logger";
 
-const logger = LoggerFacade.getLogger('my-app');
+const logger = LoggerFacade.getLogger("my-app");
 
-logger.debug('Debug message');
-logger.info('Application started');
-logger.warn('Low disk space');
-logger.error(new Error('Failed to connect to database'));
+logger.debug("Debug message");
+logger.info("Application started");
+logger.warn("Low disk space");
+logger.error(new Error("Failed to connect to database"));
 ```
 
 ### Structured Logging
 
 ```typescript
-import { LoggerFacade } from '@batkit/logger';
+import { LoggerFacade } from "@batkit/logger";
 
-const logger = LoggerFacade.getLogger('my-app');
+const logger = LoggerFacade.getLogger("my-app");
 
 // Add structured data to logs
-logger.info('User logged in', {
-  userId: '123',
+logger.info("User logged in", {
+  userId: "123",
   timestamp: Date.now(),
-  ipAddress: '192.168.1.1'
+  ipAddress: "192.168.1.1",
 });
 
 // Error logging (error first, then message, then context)
@@ -62,7 +62,7 @@ try {
   // ... some code
 } catch (error) {
   if (error instanceof Error) {
-    logger.error(error, 'Operation failed', { operation: 'createUser' });
+    logger.error(error, "Operation failed", { operation: "createUser" });
   }
 }
 ```
@@ -74,24 +74,22 @@ try {
 For request- or job-scoped fields (`requestId`, `transactionId`, etc.), use the **`@batkit/logger/async-local`** entry (built on `AsyncLocalStorage`). Wrap your `LoggerProvider` with `ContextualLoggerProvider`, run the scope with `runWithContext`, and optionally merge more fields later with `mergeLogContext`.
 
 ```typescript
-import { LoggerFacade } from '@batkit/logger';
+import { LoggerFacade } from "@batkit/logger";
 import {
   ContextualLoggerProvider,
   mergeLogContext,
   runWithContext,
   getLogContext,
-} from '@batkit/logger/async-local';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
-import { randomUUID } from 'node:crypto';
+} from "@batkit/logger/async-local";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
+import { randomUUID } from "node:crypto";
 
-LoggerFacade.setProvider(
-  new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })),
-);
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
 
 runWithContext({ requestId: randomUUID() }, () => {
-  mergeLogContext({ transactionId: 'txn-123' });
-  const log = LoggerFacade.getLogger('payments');
-  log.info('Captured'); // structured context includes both ids
+  mergeLogContext({ transactionId: "txn-123" });
+  const log = LoggerFacade.getLogger("payments");
+  log.info("Captured"); // structured context includes both ids
   console.log(getLogContext());
 });
 ```
@@ -118,15 +116,15 @@ This package provides the logger facade. You can use alternative implementations
 - [@batkit/logger-pino](../logger-pino) - Pino.js based implementation (recommended for production)
 
 ```typescript
-import type { Logger } from '@batkit/logger';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
+import type { Logger } from "@batkit/logger";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
 
 // Example: use LoggerFacade.setProvider(new PinoLoggerProvider({ level: 'info' }))
 // or wrap with ContextualLoggerProvider when using async-local context.
-const provider = new PinoLoggerProvider({ level: 'info' });
-const logger: Logger = provider.getLogger('app');
+const provider = new PinoLoggerProvider({ level: "info" });
+const logger: Logger = provider.getLogger("app");
 
-logger.info('Using Pino implementation');
+logger.info("Using Pino implementation");
 ```
 
 ## Integration with Express
@@ -142,9 +140,10 @@ Use [`logContextMiddleware`](../express-middleware/README.md) together with `Con
    - `error`: Error messages for failures
 
 2. **Add structured context** instead of string interpolation:
+
    ```typescript
    // ✅ Good
-   logger.info('User created', { userId, email });
+   logger.info("User created", { userId, email });
 
    // ❌ Avoid
    logger.info(`User ${userId} created with email ${email}`);
@@ -154,7 +153,7 @@ Use [`logContextMiddleware`](../express-middleware/README.md) together with `Con
 
 4. **Include errors first** (per `LogMethod` overloads), then optional message, then context:
    ```typescript
-   logger.error(error, 'Failed to save user', { userId });
+   logger.error(error, "Failed to save user", { userId });
    ```
 
 ## TypeScript
@@ -162,7 +161,7 @@ Use [`logContextMiddleware`](../express-middleware/README.md) together with `Con
 Full TypeScript support with exported types:
 
 ```typescript
-import type { Logger, LoggerProvider } from '@batkit/logger';
+import type { Logger, LoggerProvider } from "@batkit/logger";
 
 function setupLogger(provider: LoggerProvider, name: string): Logger {
   return provider.getLogger(name);
@@ -175,7 +174,7 @@ For optimal tree-shaking, import from the specific entry point:
 
 ```typescript
 // Import only the console entry (re-exports console helpers)
-import { ConsoleLoggerProvider } from '@batkit/logger/console';
+import { ConsoleLoggerProvider } from "@batkit/logger/console";
 ```
 
 **Node-only:** `@batkit/logger/async-local`

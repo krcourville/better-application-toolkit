@@ -10,7 +10,7 @@
     "build:clean": "tsc --build --clean",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check .",
+    "lint": "vp check .",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -21,7 +21,8 @@
     "@types/node": "^22.10.2",
     "esno": "^4.8.0",
     "pino-pretty": "^13.0.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vite-plus": "^0.1.14"
   },
   "engines": {
     "node": ">=22.0.0"

@@ -2,54 +2,55 @@
   "name": "@batkit/monorepo",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
-  "packageManager": "pnpm@9.0.0",
   "description": "Better Application Toolkit - Observability and reliability toolkit for Node.js applications",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
+  "keywords": [
+    "error-handling",
+    "express",
+    "logging",
+    "middleware",
+    "observability",
+    "rfc9457",
+    "toolkit"
   ],
-  "scripts": {
-    "build": "turbo run build",
-    "build:clean": "turbo run clean && tsc --build --clean",
-    "test": "turbo run test",
-    "test:watch": "vitest",
-    "lint": "turbo run lint",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "typecheck": "turbo run typecheck",
-    "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && turbo run clean",
-    "dev": "LOCAL_DEV=true turbo run dev --filter=express-api...",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish",
-    "stop-server": "lsof -ti :3785 | xargs kill -9",
-    "cli": "turbo run build --filter=cli-app... && pnpm --filter cli-app dev"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@changesets/cli": "^2.27.10",
-    "pino-pretty": "^13.0.0",
-    "turbo": "^2.3.3",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
-  },
-  "engines": {
-    "node": ">=22.0.0"
-  },
+  "license": "MIT",
+  "author": "Ken Courville",
   "repository": {
     "type": "git",
     "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git"
   },
-  "keywords": [
-    "observability",
-    "logging",
-    "error-handling",
-    "express",
-    "middleware",
-    "rfc9457",
-    "toolkit"
+  "workspaces": [
+    "packages/*",
+    "apps/*"
   ],
-  "author": "Ken Courville",
-  "license": "MIT"
+  "type": "module",
+  "scripts": {
+    "build": "vp run -r --cache build",
+    "build:clean": "vp run -r clean && tsc --build --clean",
+    "test": "vp run -r --cache test",
+    "test:watch": "vp test -w",
+    "check": "vp check",
+    "lint": "vp check",
+    "lint:fix": "vp check --fix",
+    "typecheck": "vp run -r --cache typecheck",
+    "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && vp run -r clean",
+    "dev": "LOCAL_DEV=true vp run --filter express-api... dev",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "vp run -r --cache build && changeset publish",
+    "stop-server": "lsof -ti :3785 | xargs kill -9",
+    "cli": "vp run -t cli-app#build && vp run --filter cli-app dev"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10",
+    "pino-pretty": "^13.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^8.0.3",
+    "vite-plus": "^0.1.14",
+    "vitest": "^4.1.2",
+    "yaml": "^2.4.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
 }

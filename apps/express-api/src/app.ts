@@ -1,21 +1,21 @@
-import './logging.js';
+import "./logging.js";
 
-import { randomUUID } from 'node:crypto';
-import { errorHandler, logContextMiddleware } from '@batkit/express-middleware';
-import { createExtendedProblemDetails } from '@batkit/rfc9457';
-import { apiReference } from '@scalar/express-api-reference';
-import { createExpressEndpoints, initServer } from '@ts-rest/express';
-import { generateOpenApi } from '@ts-rest/open-api';
-import express, { type Express } from 'express';
-import { apiContract } from './contract.js';
-import { demoHandlers } from './demo/index.js';
-import { errorHandlers } from './errors/index.js';
-import { userHandlers } from './users/index.js';
+import { randomUUID } from "node:crypto";
+import { errorHandler, logContextMiddleware } from "@batkit/express-middleware";
+import { createExtendedProblemDetails } from "@batkit/rfc9457";
+import { apiReference } from "@scalar/express-api-reference";
+import { createExpressEndpoints, initServer } from "@ts-rest/express";
+import { generateOpenApi } from "@ts-rest/open-api";
+import express, { type Express } from "express";
+import { apiContract } from "./contract.js";
+import { demoHandlers } from "./demo/index.js";
+import { errorHandlers } from "./errors/index.js";
+import { userHandlers } from "./users/index.js";
 
 /** Default avoids 3000/8080/5173 and other common dev ports; override with `PORT`. */
 export const PORT = process.env.PORT || 3785;
 
-export { logger } from './logging.js';
+export { logger } from "./logging.js";
 
 // Create Express app
 export const app: Express = express();
@@ -28,15 +28,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   logContextMiddleware({
     initialContext: (req) => ({
-      requestId: req.get('x-request-id') ?? randomUUID(),
+      requestId: req.get("x-request-id") ?? randomUUID(),
     }),
-  })
+  }),
 );
 
 // Health check endpoint
-app.get('/health', (_req, res) => {
+app.get("/health", (_req, res) => {
   res.json({
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
@@ -44,25 +44,25 @@ app.get('/health', (_req, res) => {
 
 const openApiSpec = generateOpenApi(apiContract, {
   info: {
-    title: 'Better Application Toolkit - Express API Reference',
-    version: '1.0.0',
-    description: 'Reference API built with ts-rest, express, and BAT middleware.',
+    title: "Better Application Toolkit - Express API Reference",
+    version: "1.0.0",
+    description: "Reference API built with ts-rest, express, and BAT middleware.",
   },
   servers: [{ url: `http://localhost:${PORT}` }],
 });
 
 // Extract endpoints from OpenAPI spec
 const endpoints: Record<string, unknown> = {
-  health: 'GET /health',
-  openApi: 'GET /openapi.json',
-  docs: 'GET /docs',
+  health: "GET /health",
+  openApi: "GET /openapi.json",
+  docs: "GET /docs",
 };
 
 // Add API endpoints from the OpenAPI spec
 if (openApiSpec.paths) {
   for (const [path, pathItem] of Object.entries(openApiSpec.paths)) {
     for (const method of Object.keys(pathItem as Record<string, unknown>)) {
-      if (['get', 'post', 'put', 'delete', 'patch', 'options', 'head'].includes(method)) {
+      if (["get", "post", "put", "delete", "patch", "options", "head"].includes(method)) {
         endpoints[`${method.toUpperCase()} ${path}`] = `${method.toUpperCase()} ${path}`;
       }
     }
@@ -70,8 +70,8 @@ if (openApiSpec.paths) {
 }
 
 const apiInfo = {
-  message: 'Better Application Toolkit - Express API Reference',
-  version: '1.0.0',
+  message: "Better Application Toolkit - Express API Reference",
+  version: "1.0.0",
   endpoints,
 };
 
@@ -96,11 +96,11 @@ app.use((_req, res, next) => {
     // Check if this is a Zod error response (has 'issues' array and 'name' field)
     if (
       body &&
-      typeof body === 'object' &&
-      'issues' in body &&
+      typeof body === "object" &&
+      "issues" in body &&
       Array.isArray(body.issues) &&
-      'name' in body &&
-      body.name === 'ZodError'
+      "name" in body &&
+      body.name === "ZodError"
     ) {
       interface ValidationIssue {
         path: (string | number)[];
@@ -109,16 +109,16 @@ app.use((_req, res, next) => {
       }
 
       const validationErrors = body.issues.map((issue: ValidationIssue) => ({
-        field: issue.path.join('.') || 'root',
+        field: issue.path.join(".") || "root",
         message: issue.message,
         code: issue.code,
       }));
 
       const problemDetails = createExtendedProblemDetails({
-        type: 'error:validation',
-        title: 'Validation Error',
+        type: "error:validation",
+        title: "Validation Error",
         status: 400,
-        detail: 'Request validation failed',
+        detail: "Request validation failed",
         validationErrors,
       });
 
@@ -134,24 +134,24 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.get('/openapi.json', (_req, res) => {
+app.get("/openapi.json", (_req, res) => {
   res.json(openApiSpec);
 });
 
 app.use(
-  '/docs',
+  "/docs",
   apiReference({
     spec: {
-      url: '/openapi.json',
+      url: "/openapi.json",
     },
-  } as Parameters<typeof apiReference>[0])
+  } as Parameters<typeof apiReference>[0]),
 );
 
 // 404 handler for unmatched routes
 app.use((req, res) => {
   res.status(404).json({
-    type: 'error:not-found',
-    title: 'Route Not Found',
+    type: "error:not-found",
+    title: "Route Not Found",
     status: 404,
     detail: `The route ${req.method} ${req.path} does not exist`,
     instance: req.path,

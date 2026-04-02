@@ -12,13 +12,14 @@ Changesets are a way to manage versions and changelogs with a focus on monorepos
 
 ## How to create a changeset
 
-When you make changes to any package, run:
+When you make changes to any package, from the **repository root** run:
 
 ```bash
-npm run changeset
+vp run changeset
 ```
 
 Follow the prompts to:
+
 1. Select which packages have changed
 2. Choose the type of version bump (major/minor/patch)
 3. Write a summary of the changes
@@ -30,10 +31,11 @@ This will create a markdown file in this directory describing your changes.
 When it's time to release, run:
 
 ```bash
-npm run version-packages
+vp run version-packages
 ```
 
 This will:
+
 - Read all changeset files
 - Update package.json versions based on the changesets
 - Update CHANGELOGs
@@ -42,7 +44,9 @@ This will:
 Then to publish:
 
 ```bash
-npm run release
+vp run release
 ```
 
-This will build and publish all changed packages to npm.
+This will build (via [Vite+](https://viteplus.dev/) `vp run`) and publish all changed packages to npm.
+
+If you do not have the global `vp` CLI, use `pnpm exec vp run …` from the repo root after installing dependencies (see the main [README](../README.md#development)).

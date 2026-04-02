@@ -18,11 +18,9 @@ export const apiContract = c.router(
       responses: {
         200: z.object({
           data: z.object({
-            message: z
-              .string()
-              .openapi({
-                example: "Better Application Toolkit - Express API Reference",
-              }),
+            message: z.string().openapi({
+              example: "Better Application Toolkit - Express API Reference",
+            }),
             version: z.string().openapi({ example: "1.0.0" }),
           }),
         }),
@@ -33,5 +31,5 @@ export const apiContract = c.router(
   },
   {
     pathPrefix: "/api",
-  }
+  },
 );

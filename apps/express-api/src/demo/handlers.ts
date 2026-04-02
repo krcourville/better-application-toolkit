@@ -1,7 +1,7 @@
-import { randomUUID } from 'node:crypto';
-import { LoggerFacade } from '@batkit/logger';
-import type { Request } from 'express';
-import { FulfillmentPipeline } from './fulfillment-pipeline.js';
+import { randomUUID } from "node:crypto";
+import { LoggerFacade } from "@batkit/logger";
+import type { Request } from "express";
+import { FulfillmentPipeline } from "./fulfillment-pipeline.js";
 
 type FulfillmentBody = {
   orderId: string;
@@ -14,20 +14,20 @@ type FulfillmentHandlerArgs = {
 };
 
 export class FulfillmentController {
-  private readonly logger = LoggerFacade.getLogger('fulfillment.controller');
+  private readonly logger = LoggerFacade.getLogger("fulfillment.controller");
 
   constructor(private readonly pipeline: FulfillmentPipeline) {}
 
   async handle(args: FulfillmentHandlerArgs) {
     const { body, req } = args;
 
-    const transactionId = req.get('x-transaction-id') ?? randomUUID();
+    const transactionId = req.get("x-transaction-id") ?? randomUUID();
     this.logger.mergeContext({
       transactionId,
       orderId: body.orderId,
     });
 
-    this.logger.info('Fulfillment request accepted', {
+    this.logger.info("Fulfillment request accepted", {
       orderId: body.orderId,
     });
 

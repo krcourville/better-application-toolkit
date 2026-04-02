@@ -1,12 +1,12 @@
-import { getLogContext } from '@batkit/logger/async-local';
-import type { Request, Response } from 'express';
-import { describe, expect, it } from 'vitest';
-import { logContextMiddleware } from './log-context-middleware.js';
+import { getLogContext } from "@batkit/logger/async-local";
+import type { Request, Response } from "express";
+import { describe, expect, it } from "vite-plus/test";
+import { logContextMiddleware } from "./log-context-middleware.js";
 
-describe('logContextMiddleware', () => {
-  it('runs next() inside runWithContext so getLogContext() works', () => {
+describe("logContextMiddleware", () => {
+  it("runs next() inside runWithContext so getLogContext() works", () => {
     const mw = logContextMiddleware({
-      initialContext: () => ({ requestId: 'req-test' }),
+      initialContext: () => ({ requestId: "req-test" }),
     });
     let seen = getLogContext();
     expect(seen).toBeUndefined();
@@ -15,6 +15,6 @@ describe('logContextMiddleware', () => {
       seen = getLogContext();
     });
 
-    expect(seen).toEqual({ requestId: 'req-test' });
+    expect(seen).toEqual({ requestId: "req-test" });
   });
 });

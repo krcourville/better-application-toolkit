@@ -36,7 +36,6 @@ app.get('/users/:id', (req, res) => {
   // ... your logic
   res.json({ user: {} });
 });
-});
 
 // Add error handler (must be LAST)
 app.use(errorHandler());
@@ -47,29 +46,32 @@ app.listen(3000);
 ### Error Handling
 
 ```typescript
-import { asyncHandler, errorHandler } from '@batkit/express-middleware';
-import { NotFoundError, ValidationError } from '@batkit/errors';
-import express from 'express';
+import { asyncHandler, errorHandler } from "@batkit/express-middleware";
+import { NotFoundError, ValidationError } from "@batkit/errors";
+import express from "express";
 
 const app = express();
 
 // Async route handler with error handling
-app.get('/users/:id', asyncHandler(async (req, res) => {
-  const user = await db.users.findById(req.params.id);
+app.get(
+  "/users/:id",
+  asyncHandler(async (req, res) => {
+    const user = await db.users.findById(req.params.id);
 
-  if (!user) {
-    // Automatically converted to RFC 9457 format
-    throw new NotFoundError('User', req.params.id);
-  }
+    if (!user) {
+      // Automatically converted to RFC 9457 format
+      throw new NotFoundError("User", req.params.id);
+    }
 
-  res.json(user);
-}));
+    res.json(user);
+  }),
+);
 
 // Synchronous route
-app.post('/users', (req, res) => {
+app.post("/users", (req, res) => {
   if (!req.body.email) {
-    throw new ValidationError('Invalid user data', [
-      { field: 'email', message: 'Email is required' }
+    throw new ValidationError("Invalid user data", [
+      { field: "email", message: "Email is required" },
     ]);
   }
 
@@ -87,14 +89,14 @@ app.use(errorHandler());
 **Background:** see the toolkit guide [Understanding AsyncLocalStorage](../../docs/async-local-storage.md).
 
 ```typescript
-import { logContextMiddleware } from '@batkit/express-middleware';
-import { LoggerFacade } from '@batkit/logger';
-import { ContextualLoggerProvider, mergeLogContext } from '@batkit/logger/async-local';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
-import express from 'express';
-import { randomUUID } from 'node:crypto';
+import { logContextMiddleware } from "@batkit/express-middleware";
+import { LoggerFacade } from "@batkit/logger";
+import { ContextualLoggerProvider, mergeLogContext } from "@batkit/logger/async-local";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
+import express from "express";
+import { randomUUID } from "node:crypto";
 
-LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
 
 const app = express();
 app.use(express.json());
@@ -102,14 +104,14 @@ app.use(express.json());
 app.use(
   logContextMiddleware({
     initialContext: (req) => ({
-      requestId: req.get('x-request-id') ?? randomUUID(),
+      requestId: req.get("x-request-id") ?? randomUUID(),
     }),
   }),
 );
 
-app.post('/orders/:id/submit', (req, res) => {
-  mergeLogContext({ transactionId: req.get('x-transaction-id') ?? randomUUID() });
-  LoggerFacade.getLogger('orders').info('Submitting'); // includes requestId + transactionId in structured output
+app.post("/orders/:id/submit", (req, res) => {
+  mergeLogContext({ transactionId: req.get("x-transaction-id") ?? randomUUID() });
+  LoggerFacade.getLogger("orders").info("Submitting"); // includes requestId + transactionId in structured output
   res.status(204).end();
 });
 ```
@@ -117,8 +119,8 @@ app.post('/orders/:id/submit', (req, res) => {
 ### Custom Error Formatter
 
 ```typescript
-import { errorHandler, type ErrorFormatter } from '@batkit/express-middleware';
-import type { ExtendedProblemDetails } from '@batkit/rfc9457';
+import { errorHandler, type ErrorFormatter } from "@batkit/express-middleware";
+import type { ExtendedProblemDetails } from "@batkit/rfc9457";
 
 class CustomErrorFormatter implements ErrorFormatter {
   canFormat(error: unknown): boolean {
@@ -127,20 +129,22 @@ class CustomErrorFormatter implements ErrorFormatter {
 
   format(error: MyCustomError): ExtendedProblemDetails {
     return {
-      type: 'error:custom',
-      title: 'Custom Error',
+      type: "error:custom",
+      title: "Custom Error",
       status: 400,
       detail: error.message,
-      customField: error.customData
+      customField: error.customData,
     };
   }
 }
 
-app.use(errorHandler({
-  formatters: [new CustomErrorFormatter()],
-  includeStack: true, // Include stack traces
-  logErrors: true,
-}));
+app.use(
+  errorHandler({
+    formatters: [new CustomErrorFormatter()],
+    includeStack: true, // Include stack traces
+    logErrors: true,
+  }),
+);
 ```
 
 ## API Reference
@@ -152,10 +156,11 @@ app.use(errorHandler({
 Runs `next()` inside `runWithContext(initialContext(req), …)` so nested async work can use `getLogContext` / `mergeLogContext` from `@batkit/logger/async-local`.
 
 **Options:**
+
 ```typescript
 interface LogContextMiddlewareOptions {
   /** Default: `() => ({})` */
-  initialContext?: (req: Request) => Record<string, import('@batkit/logger').LogValue>;
+  initialContext?: (req: Request) => Record<string, import("@batkit/logger").LogValue>;
 }
 ```
 
@@ -170,6 +175,7 @@ interface LogContextMiddlewareOptions {
 Creates error handling middleware that converts errors to RFC 9457 format.
 
 **Options:**
+
 ```typescript
 interface ErrorHandlerOptions {
   formatters?: ErrorFormatter[]; // Custom error formatters
@@ -186,6 +192,7 @@ interface ErrorHandlerOptions {
 Wraps async route handlers to catch errors.
 
 **Parameters:**
+
 - `fn`: Async route handler function
 
 **Returns:** Express middleware function
@@ -249,57 +256,65 @@ The default error formatter handles:
 ## Example: Complete Setup
 
 ```typescript
-import { errorHandler, asyncHandler, logContextMiddleware } from '@batkit/express-middleware';
-import { NotFoundError, ValidationError } from '@batkit/errors';
-import { LoggerFacade } from '@batkit/logger';
-import { ContextualLoggerProvider } from '@batkit/logger/async-local';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
-import express from 'express';
-import { randomUUID } from 'node:crypto';
+import { errorHandler, asyncHandler, logContextMiddleware } from "@batkit/express-middleware";
+import { NotFoundError, ValidationError } from "@batkit/errors";
+import { LoggerFacade } from "@batkit/logger";
+import { ContextualLoggerProvider } from "@batkit/logger/async-local";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
+import express from "express";
+import { randomUUID } from "node:crypto";
 
-LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
 
 const app = express();
-const logger = LoggerFacade.getLogger('server');
+const logger = LoggerFacade.getLogger("server");
 
 // Middleware
 app.use(express.json());
 app.use(
   logContextMiddleware({
-    initialContext: (req) => ({ requestId: req.get('x-request-id') ?? randomUUID() }),
+    initialContext: (req) => ({ requestId: req.get("x-request-id") ?? randomUUID() }),
   }),
 );
 
 // Routes
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
-app.get('/users/:id', asyncHandler(async (req, res) => {
-  LoggerFacade.getLogger('users').info('Fetching user', { userId: req.params.id });
+app.get(
+  "/users/:id",
+  asyncHandler(async (req, res) => {
+    LoggerFacade.getLogger("users").info("Fetching user", { userId: req.params.id });
 
-  const user = await db.users.findById(req.params.id);
-  if (!user) {
-    throw new NotFoundError('User', req.params.id);
-  }
+    const user = await db.users.findById(req.params.id);
+    if (!user) {
+      throw new NotFoundError("User", req.params.id);
+    }
 
-  res.json(user);
-}));
+    res.json(user);
+  }),
+);
 
-app.post('/users', asyncHandler(async (req, res) => {
-  const validation = validateUser(req.body);
-  if (!validation.success) {
-    throw new ValidationError('Invalid user data', validation.errors);
-  }
+app.post(
+  "/users",
+  asyncHandler(async (req, res) => {
+    const validation = validateUser(req.body);
+    if (!validation.success) {
+      throw new ValidationError("Invalid user data", validation.errors);
+    }
 
-  const user = await db.users.create(req.body);
-  res.status(201).json(user);
-}));
+    const user = await db.users.create(req.body);
+    res.status(201).json(user);
+  }),
+);
 
 // Error handler (MUST be last)
-app.use(errorHandler({
-  includeStack: true
-}));
+app.use(
+  errorHandler({
+    includeStack: true,
+  }),
+);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -27,34 +27,31 @@ This package provides ready-to-use Zod schemas, TypeScript types, and utility fu
 ### Basic Example
 
 ```typescript
-import { createProblemDetails, PROBLEM_DETAILS_CONTENT_TYPE } from '@batkit/rfc9457';
+import { createProblemDetails, PROBLEM_DETAILS_CONTENT_TYPE } from "@batkit/rfc9457";
 
 // Create a problem details object
 const problem = createProblemDetails({
   status: 404,
-  title: 'Resource Not Found',
-  detail: 'The requested user was not found',
-  instance: '/users/123',
+  title: "Resource Not Found",
+  detail: "The requested user was not found",
+  instance: "/users/123",
 });
 
 // Use in an HTTP response
-res
-  .status(problem.status!)
-  .set('Content-Type', PROBLEM_DETAILS_CONTENT_TYPE)
-  .json(problem);
+res.status(problem.status!).set("Content-Type", PROBLEM_DETAILS_CONTENT_TYPE).json(problem);
 ```
 
 ### Validation
 
 ```typescript
-import { validateProblemDetails, isProblemDetails } from '@batkit/rfc9457';
+import { validateProblemDetails, isProblemDetails } from "@batkit/rfc9457";
 
 // Validate an object
 const result = validateProblemDetails(data);
 if (result.success) {
-  console.log('Valid problem details:', result.data);
+  console.log("Valid problem details:", result.data);
 } else {
-  console.error('Validation errors:', result.error);
+  console.error("Validation errors:", result.error);
 }
 
 // Type guard
@@ -68,20 +65,20 @@ if (isProblemDetails(response)) {
 RFC 9457 allows adding custom fields to problem details:
 
 ```typescript
-import { createExtendedProblemDetails } from '@batkit/rfc9457';
+import { createExtendedProblemDetails } from "@batkit/rfc9457";
 
 interface ValidationProblem {
   validationErrors: Array<{ field: string; message: string }>;
 }
 
 const problem = createExtendedProblemDetails<ValidationProblem>({
-  type: 'https://api.example.com/errors/validation',
+  type: "https://api.example.com/errors/validation",
   status: 400,
-  title: 'Validation Failed',
-  detail: 'The request body contains invalid data',
+  title: "Validation Failed",
+  detail: "The request body contains invalid data",
   validationErrors: [
-    { field: 'email', message: 'Must be a valid email address' },
-    { field: 'age', message: 'Must be a positive integer' },
+    { field: "email", message: "Must be a valid email address" },
+    { field: "age", message: "Must be a positive integer" },
   ],
 });
 ```
@@ -89,18 +86,18 @@ const problem = createExtendedProblemDetails<ValidationProblem>({
 ### Using Schemas Directly
 
 ```typescript
-import { ProblemDetailsSchema, ExtendedProblemDetailsSchema } from '@batkit/rfc9457';
+import { ProblemDetailsSchema, ExtendedProblemDetailsSchema } from "@batkit/rfc9457";
 
 // Parse and validate
 const problem = ProblemDetailsSchema.parse({
   status: 500,
-  title: 'Internal Server Error',
+  title: "Internal Server Error",
 });
 
 // With custom fields
 const extendedProblem = ExtendedProblemDetailsSchema.parse({
   status: 503,
-  title: 'Service Unavailable',
+  title: "Service Unavailable",
   retryAfter: 60,
 });
 ```
@@ -108,7 +105,7 @@ const extendedProblem = ExtendedProblemDetailsSchema.parse({
 ### Creating Headers
 
 ```typescript
-import { createProblemDetailsHeaders } from '@batkit/rfc9457';
+import { createProblemDetailsHeaders } from "@batkit/rfc9457";
 
 // Basic headers
 const headers = createProblemDetailsHeaders();
@@ -116,8 +113,8 @@ const headers = createProblemDetailsHeaders();
 
 // With additional headers
 const headersWithCors = createProblemDetailsHeaders({
-  'Access-Control-Allow-Origin': '*',
-  'Cache-Control': 'no-cache',
+  "Access-Control-Allow-Origin": "*",
+  "Cache-Control": "no-cache",
 });
 ```
 
@@ -176,6 +173,7 @@ Validates an extended problem details object (allows additional properties).
 Creates a Problem Details object with proper defaults.
 
 **Parameters:**
+
 - `details`: Partial problem details (requires `status`)
 
 **Returns:** `ProblemDetails`
@@ -185,9 +183,11 @@ Creates a Problem Details object with proper defaults.
 Creates an extended Problem Details object with additional typed properties.
 
 **Type Parameters:**
+
 - `T`: Additional properties type
 
 **Parameters:**
+
 - `details`: Problem details with additional properties (requires `status`)
 
 **Returns:** `ExtendedProblemDetails & T`
@@ -197,6 +197,7 @@ Creates an extended Problem Details object with additional typed properties.
 Helper to create HTTP response headers for Problem Details.
 
 **Parameters:**
+
 - `additionalHeaders`: Optional additional headers
 
 **Returns:** Headers object with Content-Type set to `application/problem+json`

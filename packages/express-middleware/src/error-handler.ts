@@ -1,13 +1,13 @@
-import { isAppError } from '@batkit/errors';
-import { LoggerFacade } from '@batkit/logger';
+import { isAppError } from "@batkit/errors";
+import { LoggerFacade } from "@batkit/logger";
 import {
   type ExtendedProblemDetails,
   PROBLEM_DETAILS_CONTENT_TYPE,
   createExtendedProblemDetails,
-} from '@batkit/rfc9457';
-import type { NextFunction, Request, Response } from 'express';
+} from "@batkit/rfc9457";
+import type { NextFunction, Request, Response } from "express";
 
-const logger = LoggerFacade.getLogger('error-handler');
+const logger = LoggerFacade.getLogger("error-handler");
 /**
  * Interface for custom error formatters
  */
@@ -55,8 +55,8 @@ export class DefaultErrorFormatter implements ErrorFormatter {
     // Handle generic Error
     if (error instanceof Error) {
       return createExtendedProblemDetails({
-        type: 'error:internal',
-        title: 'Internal Server Error',
+        type: "error:internal",
+        title: "Internal Server Error",
         status: 500,
         detail: error.message,
       });
@@ -64,27 +64,27 @@ export class DefaultErrorFormatter implements ErrorFormatter {
 
     // Unknown error type
     return createExtendedProblemDetails({
-      type: 'error:unknown',
-      title: 'Unknown Error',
+      type: "error:unknown",
+      title: "Unknown Error",
       status: 500,
-      detail: 'An unknown error occurred',
+      detail: "An unknown error occurred",
     });
   }
 
   private isAxiosError(error: unknown): boolean {
     return (
-      typeof error === 'object' &&
+      typeof error === "object" &&
       error !== null &&
-      'isAxiosError' in error &&
+      "isAxiosError" in error &&
       error.isAxiosError === true
     );
   }
 
   private isZodError(error: unknown): boolean {
     return (
-      typeof error === 'object' &&
+      typeof error === "object" &&
       error !== null &&
-      'issues' in error &&
+      "issues" in error &&
       Array.isArray((error as Record<string, unknown>).issues)
     );
   }
@@ -92,8 +92,8 @@ export class DefaultErrorFormatter implements ErrorFormatter {
   private formatAxiosError(error: Record<string, unknown>): ExtendedProblemDetails {
     const status = ((error.response as Record<string, unknown>)?.status as number) || 502;
     return createExtendedProblemDetails({
-      type: 'error:upstream',
-      title: 'Upstream Service Error',
+      type: "error:upstream",
+      title: "Upstream Service Error",
       status,
       detail: error.message as string,
       upstreamUrl: (error.config as Record<string, unknown>)?.url as string | undefined,
@@ -104,16 +104,16 @@ export class DefaultErrorFormatter implements ErrorFormatter {
 
   private formatZodError(error: Record<string, unknown>): ExtendedProblemDetails {
     const validationErrors = (error.issues as Array<Record<string, unknown>>).map((issue) => ({
-      field: (issue.path as unknown[]).join('.'),
+      field: (issue.path as unknown[]).join("."),
       message: issue.message as string,
       code: issue.code as string,
     }));
 
     return createExtendedProblemDetails({
-      type: 'error:validation',
-      title: 'Validation Error',
+      type: "error:validation",
+      title: "Validation Error",
       status: 400,
-      detail: 'Request validation failed',
+      detail: "Request validation failed",
       validationErrors,
     });
   }
@@ -167,7 +167,7 @@ export interface ErrorHandlerOptions {
  * ```
  */
 export function errorHandler(
-  options: ErrorHandlerOptions = {}
+  options: ErrorHandlerOptions = {},
 ): (error: Error, req: Request, res: Response, next: NextFunction) => void {
   const {
     formatters = [new DefaultErrorFormatter()],
@@ -189,7 +189,7 @@ export function errorHandler(
         onError(error, req);
       } else {
         if (isAppError(error) && error.isOperational) {
-          logger.warn('Operational error occurred', {
+          logger.warn("Operational error occurred", {
             error: error.message,
             code: error.code,
             statusCode: error.statusCode,
@@ -217,16 +217,16 @@ export function errorHandler(
     } else {
       // Fallback to generic error
       problemDetails = createExtendedProblemDetails({
-        type: 'error:internal',
-        title: 'Internal Server Error',
+        type: "error:internal",
+        title: "Internal Server Error",
         status: 500,
-        detail: 'An unexpected error occurred',
+        detail: "An unexpected error occurred",
       });
     }
 
     // Add stack trace if enabled
     if (includeStack && error.stack) {
-      problemDetails.stack = error.stack.split('\n').map((line) => line.trim());
+      problemDetails.stack = error.stack.split("\n").map((line) => line.trim());
     }
 
     // Add instance (request path)
@@ -237,7 +237,7 @@ export function errorHandler(
     // Send RFC 9457 response
     res
       .status(problemDetails.status || 500)
-      .set('Content-Type', PROBLEM_DETAILS_CONTENT_TYPE)
+      .set("Content-Type", PROBLEM_DETAILS_CONTENT_TYPE)
       .json(problemDetails);
   };
 }
@@ -263,7 +263,7 @@ export function errorHandler(
  * ```
  */
 export function asyncHandler(
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
     Promise.resolve(fn(req, res, next)).catch(next);

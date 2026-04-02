@@ -1,10 +1,10 @@
-import { LoggerFacade } from '@batkit/logger';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
-import { ContextualLoggerProvider } from '@batkit/logger/async-local';
+import { LoggerFacade } from "@batkit/logger";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
+import { ContextualLoggerProvider } from "@batkit/logger/async-local";
 
-const prettyLogs = process.env.LOCAL_DEV === 'true';
+const prettyLogs = process.env.LOCAL_DEV === "true";
 
-const logLevel = (process.env.LOG_LEVEL ?? 'info').toLowerCase();
+const logLevel = (process.env.LOG_LEVEL ?? "info").toLowerCase();
 
 LoggerFacade.setProvider(
   new ContextualLoggerProvider(
@@ -13,17 +13,17 @@ LoggerFacade.setProvider(
       ...(prettyLogs
         ? {
             transport: {
-              target: 'pino-pretty',
+              target: "pino-pretty",
               options: {
                 colorize: true,
-                translateTime: 'SYS:yyyy-mm-dd HH:MM:ss.l',
-                ignore: 'pid,hostname',
+                translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
+                ignore: "pid,hostname",
               },
             },
           }
         : {}),
-    })
-  )
+    }),
+  ),
 );
 
 export { LoggerFacade };

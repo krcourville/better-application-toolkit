@@ -2,6 +2,30 @@
   "name": "@batkit/errors",
   "version": "0.1.0",
   "description": "Standardized error classes with structured troubleshooting information for Node.js and browser",
+  "keywords": [
+    "error",
+    "error-handling",
+    "errors",
+    "problem-details",
+    "rfc9457",
+    "typescript"
+  ],
+  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/errors#readme",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
+  },
+  "license": "MIT",
+  "author": "Ken Courville",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
+    "directory": "packages/errors"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -18,36 +42,23 @@
       }
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "build": "pnpm clean && vp pack",
+    "dev": "vp pack -w",
+    "test": "vp test",
+    "test:watch": "vp test -w",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check .",
+    "lint": "vp check .",
     "clean": "rm -rf dist"
   },
-  "keywords": ["error", "errors", "error-handling", "rfc9457", "problem-details", "typescript"],
-  "author": "Ken Courville",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
-    "directory": "packages/errors"
-  },
-  "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
-  },
-  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/errors#readme",
   "dependencies": {
     "@batkit/rfc9457": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
+    "@types/node": "^22.10.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@types/node": "^22.10.2"
+    "vite-plus": "^0.1.14",
+    "vitest": "^4.1.2"
   },
   "engines": {
     "node": ">=22.0.0"

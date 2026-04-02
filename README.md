@@ -29,7 +29,8 @@ Better Application Toolkit (BAT) is a suite of TypeScript packages designed to i
 
 ## Reference Applications
 
-- **[Express API](./apps/express-api)** - Production-ready Express.js application demonstrating all BAT packages
+- **[Express API](./apps/express-api)** — production-ready Express.js app demonstrating all BAT packages
+- **[CLI app](./apps/cli-app)** — minimal terminal demo of the logger stack (`vp run cli` from the repo root)
 
 ## Features
 
@@ -45,7 +46,7 @@ Better Application Toolkit (BAT) is a suite of TypeScript packages designed to i
 
 ### Installation
 
-Install the packages you need:
+Install the packages you need (npm, pnpm, yarn, or in a [Vite+](https://viteplus.dev/) project, `vp add`):
 
 ```bash
 pnpm add @batkit/logger @batkit/errors @batkit/express-middleware
@@ -54,29 +55,29 @@ pnpm add @batkit/logger @batkit/errors @batkit/express-middleware
 ### Basic Usage
 
 ```typescript
-import { LoggerFacade } from '@batkit/logger';
-import { ContextualLoggerProvider } from '@batkit/logger/async-local';
-import { PinoLoggerProvider } from '@batkit/logger-pino';
-import { NotFoundError } from '@batkit/errors';
-import { errorHandler, logContextMiddleware } from '@batkit/express-middleware';
-import express from 'express';
-import { randomUUID } from 'node:crypto';
+import { LoggerFacade } from "@batkit/logger";
+import { ContextualLoggerProvider } from "@batkit/logger/async-local";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
+import { NotFoundError } from "@batkit/errors";
+import { errorHandler, logContextMiddleware } from "@batkit/express-middleware";
+import express from "express";
+import { randomUUID } from "node:crypto";
 
-LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: 'info' })));
+LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
 
 const app = express();
 app.use(express.json());
 app.use(
   logContextMiddleware({
-    initialContext: (req) => ({ requestId: req.get('x-request-id') ?? randomUUID() }),
+    initialContext: (req) => ({ requestId: req.get("x-request-id") ?? randomUUID() }),
   }),
 );
 
 // Your routes
-app.get('/users/:id', (req, res) => {
+app.get("/users/:id", (req, res) => {
   const user = findUser(req.params.id);
   if (!user) {
-    throw new NotFoundError('User', req.params.id);
+    throw new NotFoundError("User", req.params.id);
   }
   res.json(user);
 });
@@ -89,14 +90,20 @@ app.listen(3000);
 
 ## Development
 
+This monorepo is driven by **[Vite+](https://viteplus.dev/)** (`vp`): install, scripts, checks, tests, and library builds all go through the same toolchain ([`vp install`](https://viteplus.dev/guide/install), [`vp run`](https://viteplus.dev/guide/run), [`vp check`](https://viteplus.dev/guide/check), [`vp test`](https://viteplus.dev/guide/test), [`vp pack`](https://viteplus.dev/guide/pack)). The repo pins a package manager in `package.json` (`packageManager`); Vite+ delegates installs to it.
+
+**Install the `vp` CLI** (recommended): follow [Install `vp`](https://viteplus.dev/guide/) (macOS/Linux: `curl -fsSL https://vite.plus | bash`). In CI, use [setup-vp](https://viteplus.dev/) as described on the site.
+
+If you do not have a global `vp` yet, install it first (see above). As a one-time bootstrap, you can enable [Corepack](https://nodejs.org/api/corepack.html) and run `pnpm install` at the repo root so `vite-plus` is available, then use `pnpm exec vp <command>` for every workflow until you switch to a global `vp`.
+
 ### Prerequisites
 
-- Node.js 22.0.0 or higher
-- pnpm 9.0.0 or higher
+- Node.js 22.0.0 or higher (Vite+ can also manage Node via [`vp env`](https://viteplus.dev/guide/env))
+- [`vp`](https://viteplus.dev/guide/) on your `PATH` (recommended), or `pnpm exec vp` after a local install that includes `vite-plus`
 
 ### Node Version Managers
 
-This repo uses pnpm workspaces with the `workspace:*` protocol, which is natively supported in pnpm.
+Use any Node version manager you prefer; align with `engines` in `package.json`.
 
 #### asdf
 
@@ -105,7 +112,7 @@ asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 asdf install nodejs 24.4.1
 asdf set nodejs 24.4.1
 node -v
-pnpm -v
+vp --version
 ```
 
 If `asdf set` is unavailable, create `.tool-versions` manually:
@@ -114,7 +121,7 @@ If `asdf set` is unavailable, create `.tool-versions` manually:
 echo "nodejs 24.4.1" > .tool-versions
 asdf install
 node -v
-pnpm -v
+vp --version
 ```
 
 #### nvm
@@ -123,7 +130,7 @@ pnpm -v
 nvm install 22
 nvm use 22
 node -v
-pnpm -v
+vp --version
 ```
 
 ### Setup
@@ -133,20 +140,17 @@ pnpm -v
 git clone https://github.com/YOUR_USERNAME/better-application-toolkit.git
 cd better-application-toolkit
 
-# Install pnpm globally (if not already installed)
-npm install -g pnpm@9
-
-# Install dependencies
-pnpm install
+# Install dependencies (uses the pinned package manager via Vite+)
+vp install
 
 # Build all packages (required for first-time setup)
-pnpm build
+vp run -r --cache build
 
 # Run tests
-pnpm test
+vp run -r --cache test
 
-# Start development server for Express reference app
-pnpm dev
+# Start development server for Express reference app (root script sets LOCAL_DEV)
+vp run dev
 ```
 
 ### Development Workflow
@@ -156,40 +160,46 @@ This monorepo uses **TypeScript Project References** for optimal development exp
 #### Development Mode
 
 **Hot reload (recommended)**
-```bash
-# express-api runs from TypeScript via esno (`tsx` under the hood); workspace libraries rebuild with tsup --watch
-pnpm dev
-```
-This runs the Express app with [`esno`](https://github.com/esbuild-kit/esno) (`esno watch`), which delegates to [`tsx`](https://github.com/privatenumber/tsx). Turborepo also starts persistent **`dev`** (and **`dev:async-local`** for `@batkit/logger`) so linked packages emit `dist/**` while you work. **This is the preferred way to develop.**
 
-The `pnpm dev` script automatically sets `LOCAL_DEV=true`, which enables:
+```bash
+# From the repository root (uses the root package.json "dev" script)
+vp run dev
+```
+
+This runs the Express app with [`esno`](https://github.com/esbuild-kit/esno) (`esno watch`), which delegates to [`tsx`](https://github.com/privatenumber/tsx). [`vp run`](https://viteplus.dev/guide/run) starts persistent **`dev`** tasks for the `express-api` dependency chain so linked packages emit `dist/**` while you work (including **dual tsup watchers** for `@batkit/logger`). **This is the preferred way to develop.**
+
+The root `dev` script sets `LOCAL_DEV=true`, which enables:
+
 - Pretty-printed console logs with colors and timestamps
 - Enhanced logging output for better readability during development
 
 **To run with different log levels:**
+
 ```bash
 # Default is 'info'
-LOG_LEVEL=debug pnpm dev
-LOG_LEVEL=warn pnpm dev
+LOG_LEVEL=debug vp run dev
+LOG_LEVEL=warn vp run dev
 ```
 
 #### Production Builds
 
 **Build for production:**
+
 ```bash
-# Build all packages with TypeScript project references
-pnpm build
+# Build all packages (cached task graph)
+vp run -r --cache build
 
 # Clean all build artifacts and rebuild
-pnpm build:clean && pnpm build
+vp run -r clean && tsc --build --clean && vp run -r --cache build
 
 # Run the production build
-pnpm --filter express-api start
+vp run --filter express-api start
 ```
 
 #### Navigating Code
 
 With TypeScript project references enabled:
+
 - **Go-to-definition** takes you to the source `.ts` file, not `.d.ts` declarations
 - **IntelliSense** works across packages
 - Changes in dependent packages are automatically detected
@@ -197,6 +207,7 @@ With TypeScript project references enabled:
 #### TypeScript Project References
 
 The monorepo is configured with composite builds:
+
 - Each package has `"composite": true` in its `tsconfig.json`
 - Dependencies between packages are declared via `"references"`
 - The root `tsconfig.json` orchestrates the whole workspace
@@ -205,60 +216,57 @@ The monorepo is configured with composite builds:
 #### Common Development Tasks
 
 **Making changes to a package:**
+
 ```bash
-# Start development (esno + Turbo package watchers)
-pnpm dev
+vp run dev
 ```
 
 **Testing your changes:**
+
 ```bash
 # Run tests for all packages
-pnpm test
+vp run -r --cache test
 
 # Run tests for a specific package
-pnpm --filter @batkit/errors test
+vp run --filter @batkit/errors test
 
-# Watch mode for TDD
-pnpm test:watch
+# Watch mode for TDD (root script runs `vp test -w`)
+vp run test:watch
 ```
 
 **Building for production:**
+
 ```bash
 # Build everything
-pnpm build
+vp run -r --cache build
 
 # Build and run production server
-pnpm build && pnpm --filter express-api start
+vp run -r --cache build && vp run --filter express-api start
 ```
 
 **Adding a new dependency to a package:**
+
 ```bash
-# Navigate to the package
 cd packages/logger
-
-# Add the dependency
-pnpm add some-package
-
-# Or add a workspace dependency
-pnpm add @batkit/errors@workspace:*
+vp add some-package
+vp add @batkit/errors@workspace:*
 ```
+
+See [`vp add` / `vp install`](https://viteplus.dev/guide/install) for workspace-wide options.
 
 **Troubleshooting:**
 
-If you encounter issues:
 ```bash
-# Clean everything and reinstall
-pnpm clean
-pnpm install
+# Nuclear clean (root "clean" script: removes root node_modules, lockfile, then cleans all packages)
+vp run clean
+vp install
 
-# Clean only build artifacts
-pnpm build:clean
+# Clean only build artifacts, then full rebuild
+vp run build:clean
+vp run build
 
-# Rebuild everything from scratch
-pnpm build:clean && pnpm build
-
-# Kill server if the reference app port (default 3785) is busy
-pnpm stop-server
+# Free the default express-api port (3785)
+vp run stop-server
 ```
 
 ### Project Structure
@@ -272,32 +280,36 @@ better-application-toolkit/
 │   ├── logger-pino/      # Pino implementation
 │   └── express-middleware/ # Express utilities
 ├── apps/                 # Reference applications
-│   └── express-api/      # Express.js example
+│   ├── express-api/      # Express.js example
+│   └── cli-app/          # CLI demo
 ├── .changeset/           # Changesets for versioning
 └── .github/              # GitHub Actions workflows
 ```
 
-### Available Scripts
+### Available commands (Vite+)
 
-**Development**
-- `pnpm dev` - Run Express reference app with hot reload (esno + Turbo watchers for workspace packages)
+Run these from the **repository root**. They map to [`package.json`](./package.json) scripts, which are implemented with `vp` ([`vp run`](https://viteplus.dev/guide/run), [`vp check`](https://viteplus.dev/guide/check), [`vp test`](https://viteplus.dev/guide/test)).
 
-**Building**
-- `pnpm build` - Build all packages with TypeScript project references
-- `pnpm build:clean` - Clean all build artifacts
+| Command | Purpose |
+| --- | --- |
+| `vp install` | Install dependencies (delegates to the pinned package manager) |
+| `vp run dev` | Express reference app with hot reload and workspace watchers |
+| `vp run build` | Production build for all packages and apps |
+| `vp run build:clean` | Runs `vp run -r clean`, then root `tsc --build --clean` |
+| `vp run test` | Run all package tests |
+| `vp run test:watch` | Tests in watch mode (`vp test -w`) |
+| `vp check` | Format, lint, and type-check ([`vp check`](https://viteplus.dev/guide/check)) |
+| `vp run check`, `vp run lint` | Same as `vp check` (script aliases) |
+| `vp run lint:fix` | `vp check --fix` |
+| `vp run typecheck` | `tsc --noEmit` in every workspace package |
+| `vp run cli` | Build and run the `cli-app` demo |
+| `vp run release` | Build, then Changesets publish |
+| `vp run changeset` | Interactive Changesets CLI |
+| `vp run version-packages` | Apply version bumps from changesets |
+| `vp run clean` | Remove root `node_modules` and lockfile, then clean all packages |
+| `vp run stop-server` | Kill anything listening on port **3785** |
 
-**Testing & Quality**
-- `pnpm test` - Run all tests
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm lint` - Lint all code
-- `pnpm lint:fix` - Lint and auto-fix issues
-- `pnpm format` - Format all code with Biome
-- `pnpm typecheck` - Type check all packages
-
-**Utilities**
-- `pnpm stop-server` - Kill any process on the express-api default port (3785; matches `PORT` in `.env`)
-- `pnpm changeset` - Create a new changeset for versioning
-- `pnpm clean` - Remove all node_modules and lockfiles
+Inside an individual package directory you can still use **`vp pack`**, **`vp test`**, or **`vp check`** directly; the table above covers the usual **root** workflows.
 
 ## Contributing
 
@@ -308,7 +320,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for de
 When making changes to packages, add a changeset:
 
 ```bash
-pnpm changeset
+vp run changeset
 ```
 
 Follow the prompts to describe your changes. This helps automate versioning and changelog generation.
@@ -319,6 +331,7 @@ MIT © Ken Courville
 
 ## Learn More
 
+- [Vite+](https://viteplus.dev/) — unified `vp` toolchain (install, run, check, test, pack)
 - [RFC 9457 - Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457.html)
 - [Express.js Documentation](https://expressjs.com/)
 - [Pino Logger](https://getpino.io/)

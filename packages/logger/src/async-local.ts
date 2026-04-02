@@ -1,7 +1,7 @@
-import { mergeLogContext, overlay, runWithContext } from './log-context.js';
-import type { LogLevel, LogMethod, LogValue, Logger, LoggerProvider } from './types.js';
+import { mergeLogContext, overlay, runWithContext } from "./log-context.js";
+import type { LogLevel, LogMethod, LogValue, Logger, LoggerProvider } from "./types.js";
 
-export { getLogContext, mergeLogContext, runWithContext } from './log-context.js';
+export { getLogContext, mergeLogContext, runWithContext } from "./log-context.js";
 
 function isError(value: unknown): value is Error {
   return value instanceof Error;
@@ -10,7 +10,7 @@ function isError(value: unknown): value is Error {
 function wrapLogMethod(inner: LogMethod): LogMethod {
   const wrapped = ((a?: unknown, b?: unknown, c?: unknown) => {
     if (isError(a)) {
-      if (typeof b === 'string') {
+      if (typeof b === "string") {
         inner(a, b, overlay(c as Record<string, LogValue> | undefined));
         return;
       }
@@ -18,12 +18,12 @@ function wrapLogMethod(inner: LogMethod): LogMethod {
       return;
     }
 
-    if (typeof a === 'string') {
+    if (typeof a === "string") {
       inner(a, overlay(b as Record<string, LogValue> | undefined));
       return;
     }
 
-    if (a !== null && typeof a === 'object' && !Array.isArray(a)) {
+    if (a !== null && typeof a === "object" && !Array.isArray(a)) {
       const base = a as Record<string, LogValue>;
       const merged = overlay(base);
       inner(merged ?? {});
