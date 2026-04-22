@@ -4,11 +4,11 @@ This guide explains how to set up the Better Application Toolkit (BAT) monorepo 
 
 ## Development
 
-This monorepo is driven by **[Vite+](https://viteplus.dev/)** (`vp`): install, scripts, checks, tests, and library builds all go through the same toolchain ([`vp install`](https://viteplus.dev/guide/install), [`vp run`](https://viteplus.dev/guide/run), [`vp check`](https://viteplus.dev/guide/check), [`vp test`](https://viteplus.dev/guide/test), [`vp pack`](https://viteplus.dev/guide/pack)). The repo pins a package manager in `package.json` (`packageManager`); Vite+ delegates installs to it.
+This repository uses **[Vite+](https://viteplus.dev/)** (`vp`) as its main CLI: installs (`vp install`), workspace scripts (`vp run …`), checks, tests, and package builds (`vp pack`). Installs use the package manager pinned in the root `package.json` (`packageManager`).
 
-**Install the `vp` CLI** (recommended): follow [Install `vp`](https://viteplus.dev/guide/) (macOS/Linux: `curl -fsSL https://vite.plus | bash`). In CI, use [setup-vp](https://viteplus.dev/) as described on the site.
+Put **`vp`** on your `PATH` for local work ([Install `vp`](https://viteplus.dev/guide/)); in CI, use [setup-vp](https://viteplus.dev/).
 
-If you do not have a global `vp` yet, install it first (see above). As a one-time bootstrap, you can enable [Corepack](https://nodejs.org/api/corepack.html) and run `pnpm install` at the repo root so `vite-plus` is available, then use `pnpm exec vp <command>` for every workflow until you switch to a global `vp`.
+Further reading: [install](https://viteplus.dev/guide/install), [run](https://viteplus.dev/guide/run), [check](https://viteplus.dev/guide/check), [test](https://viteplus.dev/guide/test), [pack](https://viteplus.dev/guide/pack).
 
 ### Prerequisites
 
@@ -80,7 +80,7 @@ This monorepo uses **TypeScript Project References** for optimal development exp
 vp run dev
 ```
 
-This runs the Express app with [`esno`](https://github.com/esbuild-kit/esno) (`esno watch`), which delegates to [`tsx`](https://github.com/privatenumber/tsx). [`vp run`](https://viteplus.dev/guide/run) starts persistent **`dev`** tasks for the `express-api` dependency chain so linked packages emit `dist/**` while you work (including **dual tsup watchers** for `@batkit/logger`). **This is the preferred way to develop.**
+That starts the **express-api** dev server in watch mode. **[esno](https://github.com/esbuild-kit/esno)** is a TypeScript runner: it executes `src/index.ts` directly and, with `--watch`, restarts the Node process when sources change (no separate compile step for the app). The exact command lives in `apps/express-api/package.json` under `scripts.dev`. At the same time, [`vp run`](https://viteplus.dev/guide/run) keeps the **`dev`** task graph running so workspace packages keep writing `dist/**` while you edit (including watchers for `@batkit/logger`). **Use this flow** when you work across the monorepo.
 
 The root `dev` script sets `LOCAL_DEV=true`, which enables:
 

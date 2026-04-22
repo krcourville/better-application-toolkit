@@ -19,8 +19,8 @@ Do you ever find yourself in these scenarios?
 
 Observability is how you answer those questions with evidence instead of guesses. Better Application Toolkit helps in two ways:
 
-1. **documentation** that captures recommendations and patterns you can adopt deliberately
-2. **libraries** you can wire into your app so those practices are easier to ship and keep consistent.
+1. **Documentation** that captures recommendations and patterns you can adopt deliberately
+2. **Libraries** you can wire into your app so those practices are easier to ship and keep consistent.
 
 ## Overview
 
