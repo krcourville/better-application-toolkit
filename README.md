@@ -28,8 +28,9 @@ Better Application Toolkit (BAT) is a suite of TypeScript packages designed to i
 
 ## Documentation
 
+- **[Observability recommendations](./docs/recommendations.md)** — MELT framing, logging practices, and how traces and metrics fit alongside BAT.
 - **[Understanding AsyncLocalStorage](./docs/async-local-storage.md)** — how ALS works, use cases, pitfalls, and how BAT uses it for logging.
-- Logging pitfalls and patterns: see [@batkit/logger](./packages/logger/README.md) and the AsyncLocalStorage guide above.
+- Package specifics: [@batkit/logger](./packages/logger/README.md), [@batkit/express-middleware](./packages/express-middleware/README.md), and the AsyncLocalStorage guide above.
 
 ## Packages
 
@@ -109,7 +110,7 @@ app.listen(3000);
 
 -[X] Bootstrap project
 -[X] Bootstrap libraries and reference apps
--[ ] Add documentation of recommendations
+-[X] Add documentation of recommendations
 -[ ] Establish CI pipeline
 -[ ] Deploy a beta release to npmjs.com
 
