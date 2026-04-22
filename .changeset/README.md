@@ -49,4 +49,4 @@ vp run release
 
 This will build (via [Vite+](https://viteplus.dev/) `vp run`) and publish all changed packages to npm.
 
-If you do not have the global `vp` CLI, use `pnpm exec vp run …` from the repo root after installing dependencies (see the main [README](../README.md#development)).
+If you do not have the global `vp` CLI, use `pnpm exec vp run …` from the repo root after installing dependencies (see [CONTRIBUTING.md](../CONTRIBUTING.md#development)).
