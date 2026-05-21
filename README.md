@@ -108,11 +108,12 @@ app.listen(3000);
 
 ## TODO
 
--[X] Bootstrap project
--[X] Bootstrap libraries and reference apps
--[X] Add documentation of recommendations
--[ ] Establish CI pipeline
--[ ] Deploy a beta release to npmjs.com
+- [X] Bootstrap project
+- [X] Bootstrap libraries and reference apps
+- [X] Add documentation of recommendations
+- [ ] Establish CI pipeline
+- [ ] Deploy a beta release to npmjs.com
+- [ ] Add recommendations for alarms/alerts
 
 ## Contributing
 
