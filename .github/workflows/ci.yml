@@ -22,9 +22,9 @@ jobs:
 
       - run: vp install
       - run: vp run -r --cache build
-      - run: pnpm publint
-      - run: pnpm attw
+      - run: vp run publint
+      - run: vp run attw
       - run: vp check
       - run: vp run -r --cache typecheck
-      - run: pnpm knip
+      - run: vp run knip
       - run: vp run -r --cache test
