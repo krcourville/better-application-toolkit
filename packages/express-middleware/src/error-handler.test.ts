@@ -75,4 +75,54 @@ describe("errorHandler logging", () => {
     expect(context.querd).toBeUndefined();
     expect(context.consoley).toBeUndefined();
   });
+
+  it("omits raw body and logs content-type+length when body is binary", async () => {
+    const handler = errorHandler();
+    const req = {
+      path: "/upload",
+      method: "POST",
+      query: {},
+      body: Buffer.from([0xff, 0xd8, 0xff]),
+      headers: { "content-type": "image/jpeg" },
+    } as unknown as Request;
+    const res = {
+      headersSent: false,
+      status: () => res,
+      set: () => res,
+      json: () => res,
+    } as unknown as Response;
+
+    handler(new Error("boom"), req, res, () => {});
+
+    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+
+    expect(context.body).toBeUndefined();
+    expect(context.bodyContentType).toBe("image/jpeg");
+    expect(context.bodyLength).toBe(3);
+  });
+
+  it("still logs body when not binary", async () => {
+    const handler = errorHandler();
+    const req = {
+      path: "/widgets",
+      method: "POST",
+      query: {},
+      body: { name: "widget" },
+      headers: { "content-type": "application/json" },
+    } as unknown as Request;
+    const res = {
+      headersSent: false,
+      status: () => res,
+      set: () => res,
+      json: () => res,
+    } as unknown as Response;
+
+    handler(new Error("boom"), req, res, () => {});
+
+    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+
+    expect(context.body).toEqual({ name: "widget" });
+    expect(context.bodyContentType).toBeUndefined();
+    expect(context.bodyLength).toBeUndefined();
+  });
 });

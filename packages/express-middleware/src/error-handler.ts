@@ -201,7 +201,9 @@ export function errorHandler(
             path: req.path,
             method: req.method,
             query: req.query,
-            body: req.body,
+            ...(Buffer.isBuffer(req.body)
+              ? { bodyContentType: req.headers["content-type"], bodyLength: req.body.length }
+              : { body: req.body }),
           });
         }
       }
