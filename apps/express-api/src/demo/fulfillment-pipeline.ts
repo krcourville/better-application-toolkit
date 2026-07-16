@@ -2,7 +2,15 @@ import { ValidationError } from "@batkit/errors";
 import { LoggerFacade } from "@batkit/logger";
 import { delay } from "../lib/async-utils";
 
-export type FulfillmentItem = { sku: string; qty: number };
+export interface FulfillmentItem {
+  sku: string;
+  qty: number;
+}
+
+const INITIAL_STOCK = 100;
+const NO_STOCK = 0;
+const RESERVE_STEP_DELAY_MS = 15;
+const PAYMENT_STEP_DELAY_MS = 10;
 
 /**
  * Multi-step async fulfillment. Correlation fields are expected to be merged into
@@ -11,7 +19,7 @@ export type FulfillmentItem = { sku: string; qty: number };
  */
 export class FulfillmentPipeline {
   /** In-memory stock for demo only (not reset between requests). */
-  readonly #inventory = new Map<string, number>([["SKU-1", 100]]);
+  readonly #inventory = new Map<string, number>([["SKU-1", INITIAL_STOCK]]);
 
   private readonly logger = LoggerFacade.getLogger("fulfillment.pipeline");
 
@@ -19,7 +27,7 @@ export class FulfillmentPipeline {
     this.logger.mergeContext({ orderId });
     this.logger.info("Pipeline start", { lineCount: items.length });
 
-    await delay(15);
+    await delay(RESERVE_STEP_DELAY_MS);
 
     const reserved: FulfillmentItem[] = [];
     try {
@@ -32,7 +40,7 @@ export class FulfillmentPipeline {
       throw error;
     }
 
-    await delay(10);
+    await delay(PAYMENT_STEP_DELAY_MS);
 
     this.logger.info("Payment stub succeeded");
     this.logger.info("Pipeline complete");
@@ -40,7 +48,7 @@ export class FulfillmentPipeline {
   }
 
   #reserveLine(item: FulfillmentItem): void {
-    const available = this.#inventory.get(item.sku) ?? 0;
+    const available = this.#inventory.get(item.sku) ?? NO_STOCK;
     if (available < item.qty) {
       throw new ValidationError("Insufficient stock", [
         {
@@ -52,18 +60,18 @@ export class FulfillmentPipeline {
     }
     this.#inventory.set(item.sku, available - item.qty);
     this.logger.info("Stock reserved", {
-      sku: item.sku,
       qty: item.qty,
+      sku: item.sku,
     });
   }
 
   #rollback(items: FulfillmentItem[]): void {
     for (const item of items) {
-      const available = this.#inventory.get(item.sku) ?? 0;
+      const available = this.#inventory.get(item.sku) ?? NO_STOCK;
       this.#inventory.set(item.sku, available + item.qty);
       this.logger.info("Stock reservation rolled back", {
-        sku: item.sku,
         qty: item.qty,
+        sku: item.sku,
       });
     }
   }

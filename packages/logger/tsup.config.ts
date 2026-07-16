@@ -1,25 +1,18 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: {
-    index: "src/index.ts",
-    console: "src/console.ts",
-    "log-context": "src/log-context.ts",
-  },
-  format: ["esm", "cjs"],
+  // Keep false so `tsup --watch` does not delete `async-local.*` emitted by the other watcher.
+  clean: false,
   dts: {
     compilerOptions: {
       composite: false,
     },
   },
-  splitting: false,
-  sourcemap: true,
-  // Keep false so `tsup --watch` does not delete `async-local.*` emitted by the other watcher.
-  clean: false,
-  treeshake: true,
-  minify: false,
-  target: "es2022",
-  platform: "neutral",
+  entry: {
+    console: "src/console.ts",
+    index: "src/index.ts",
+    "log-context": "src/log-context.ts",
+  },
   esbuildOptions(options) {
     // Keep dist/log-context.* as the single ALS module for all consumers.
     options.external ??= [];
@@ -27,4 +20,11 @@ export default defineConfig({
       options.external.push("./log-context.js", "./log-context.cjs");
     }
   },
+  format: ["esm", "cjs"],
+  minify: false,
+  platform: "neutral",
+  sourcemap: true,
+  splitting: false,
+  target: "es2022",
+  treeshake: true,
 });

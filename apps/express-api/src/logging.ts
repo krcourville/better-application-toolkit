@@ -13,12 +13,12 @@ LoggerFacade.setProvider(
       ...(prettyLogs
         ? {
             transport: {
-              target: "pino-pretty",
               options: {
                 colorize: true,
-                translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
                 ignore: "pid,hostname",
+                translateTime: "SYS:yyyy-mm-dd HH:MM:ss.l",
               },
+              target: "pino-pretty",
             },
           }
         : {}),

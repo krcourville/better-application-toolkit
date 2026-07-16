@@ -5,6 +5,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { PinoLoggerProvider } from "./index.js";
 import { adaptPinoToBatkitLogger } from "./pino-batkit-adapter.js";
 
+// oxlint-disable-next-line no-magic-numbers -- [0] is a type-level tuple index, not a runtime value; there's no constant to extract.
 type PinoRootOptions = NonNullable<ConstructorParameters<typeof pino>[0]>;
 
 function sinkPino() {
@@ -16,11 +17,13 @@ function sinkPino() {
     },
   });
   const root = pino({ level: "debug" }, stream);
-  return { root, lines };
+  return { lines, root };
 }
 
+const SINGLE_LINE = 1;
+
 function parseSingleLine(lines: string[]): Record<string, unknown> {
-  expect(lines).toHaveLength(1);
+  expect(lines).toHaveLength(SINGLE_LINE);
   const [line] = lines;
   expect(line).toBeDefined();
   return JSON.parse(line) as Record<string, unknown>;
@@ -57,10 +60,11 @@ describe("adaptPinoToBatkitLogger", () => {
   it("maps error(error, ctx) to merged err + ctx", () => {
     const { root, lines } = sinkPino();
     const log = adaptPinoToBatkitLogger(root.child({}));
-    log.error(new Error("nope"), { retries: 2 });
+    const retryCount = 2;
+    log.error(new Error("nope"), { retries: retryCount });
     const row = parseSingleLine(lines);
     expect(row.err.message).toBe("nope");
-    expect(row.retries).toBe(2);
+    expect(row.retries).toBe(retryCount);
   });
 
   it("maps error(error, msg, ctx)", () => {

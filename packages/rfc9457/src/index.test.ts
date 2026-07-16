@@ -24,11 +24,11 @@ describe("@batkit/rfc9457", () => {
 
     it("should validate a complete problem details object", () => {
       const problemDetails = {
-        type: "https://example.com/errors/not-found",
-        title: "Resource Not Found",
-        status: 404,
         detail: "The requested resource was not found",
         instance: "/users/123",
+        status: 404,
+        title: "Resource Not Found",
+        type: "https://example.com/errors/not-found",
       };
 
       const result = ProblemDetailsSchema.safeParse(problemDetails);
@@ -51,7 +51,12 @@ describe("@batkit/rfc9457", () => {
     });
 
     it("should accept valid status code range", () => {
-      const validStatuses = [100, 200, 404, 500, 599];
+      const httpStatusMin = 100;
+      const ok = 200;
+      const notFound = 404;
+      const internalServerError = 500;
+      const httpStatusMax = 599;
+      const validStatuses = [httpStatusMin, ok, notFound, internalServerError, httpStatusMax];
       for (const status of validStatuses) {
         const result = ProblemDetailsSchema.safeParse({ status });
         expect(result.success).toBe(true);
@@ -62,10 +67,10 @@ describe("@batkit/rfc9457", () => {
   describe("validateProblemDetails", () => {
     it("should validate valid problem details", () => {
       const result = validateProblemDetails({
-        type: "https://example.com/errors/forbidden",
-        title: "Forbidden",
-        status: 403,
         detail: "You do not have permission to access this resource",
+        status: 403,
+        title: "Forbidden",
+        type: "https://example.com/errors/forbidden",
       });
 
       expect(result.success).toBe(true);
@@ -80,13 +85,15 @@ describe("@batkit/rfc9457", () => {
     });
 
     it("should provide error details for invalid data", () => {
+      // Invalid status code
       const result = validateProblemDetails({
-        status: 1000, // Invalid status code
+        status: 1000,
       });
 
+      const noIssues = 0;
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.length).toBeGreaterThan(0);
+        expect(result.error.issues.length).toBeGreaterThan(noIssues);
       }
     });
   });
@@ -94,13 +101,13 @@ describe("@batkit/rfc9457", () => {
   describe("validateExtendedProblemDetails", () => {
     it("should allow additional properties", () => {
       const extendedDetails = {
-        type: "https://example.com/errors/validation",
-        title: "Validation Error",
-        status: 400,
         errors: [
           { field: "email", message: "Invalid email format" },
           { field: "password", message: "Password too short" },
         ],
+        status: 400,
+        title: "Validation Error",
+        type: "https://example.com/errors/validation",
       };
 
       const result = validateExtendedProblemDetails(extendedDetails);
@@ -112,8 +119,8 @@ describe("@batkit/rfc9457", () => {
 
     it("should validate core RFC 9457 fields", () => {
       const result = validateExtendedProblemDetails({
-        status: "invalid",
         customField: "allowed",
+        status: "invalid",
       });
 
       expect(result.success).toBe(false);
@@ -122,20 +129,21 @@ describe("@batkit/rfc9457", () => {
 
   describe("createProblemDetails", () => {
     it("should create problem details with defaults", () => {
+      const notFoundStatus = 404;
       const problem = createProblemDetails({
-        status: 404,
+        status: notFoundStatus,
         title: "Not Found",
       });
 
       expect(problem.type).toBe("about:blank");
-      expect(problem.status).toBe(404);
+      expect(problem.status).toBe(notFoundStatus);
       expect(problem.title).toBe("Not Found");
     });
 
     it("should allow overriding type", () => {
       const problem = createProblemDetails({
-        type: "https://example.com/errors/not-found",
         status: 404,
+        type: "https://example.com/errors/not-found",
       });
 
       expect(problem.type).toBe("https://example.com/errors/not-found");
@@ -143,19 +151,19 @@ describe("@batkit/rfc9457", () => {
 
     it("should create complete problem details", () => {
       const problem = createProblemDetails({
-        type: "https://example.com/errors/unauthorized",
-        title: "Unauthorized",
-        status: 401,
         detail: "Invalid authentication token",
         instance: "/api/users/me",
+        status: 401,
+        title: "Unauthorized",
+        type: "https://example.com/errors/unauthorized",
       });
 
       expect(problem).toEqual({
-        type: "https://example.com/errors/unauthorized",
-        title: "Unauthorized",
-        status: 401,
         detail: "Invalid authentication token",
         instance: "/api/users/me",
+        status: 401,
+        title: "Unauthorized",
+        type: "https://example.com/errors/unauthorized",
       });
     });
 
@@ -167,25 +175,25 @@ describe("@batkit/rfc9457", () => {
   describe("createExtendedProblemDetails", () => {
     it("should create extended problem details with custom fields", () => {
       const problem = createExtendedProblemDetails({
-        type: "https://example.com/errors/validation",
+        requestId: "req-123",
         status: 400,
         title: "Validation Error",
+        type: "https://example.com/errors/validation",
         validationErrors: [{ field: "email", message: "Invalid format" }],
-        requestId: "req-123",
       });
 
       expect(problem).toEqual({
+        requestId: "req-123",
         status: 400,
         title: "Validation Error",
         type: "https://example.com/errors/validation",
         validationErrors: [{ field: "email", message: "Invalid format" }],
-        requestId: "req-123",
       });
     });
 
     it("should maintain type safety for custom fields", () => {
       interface ValidationProblem extends Record<string, unknown> {
-        validationErrors: Array<{ field: string; message: string }>;
+        validationErrors: { field: string; message: string }[];
       }
 
       const problem = createExtendedProblemDetails<ValidationProblem>({
@@ -193,9 +201,10 @@ describe("@batkit/rfc9457", () => {
         validationErrors: [{ field: "email", message: "Required" }],
       });
 
+      const firstError = 0;
       // TypeScript should know about validationErrors
       expect(problem.validationErrors).toBeDefined();
-      expect(problem.validationErrors[0]?.field).toBe("email");
+      expect(problem.validationErrors[firstError]?.field).toBe("email");
     });
   });
 
@@ -228,9 +237,9 @@ describe("@batkit/rfc9457", () => {
   describe("isProblemDetails", () => {
     it("should return true for valid problem details", () => {
       const valid: ProblemDetails = {
-        type: "about:blank",
         status: 500,
         title: "Internal Server Error",
+        type: "about:blank",
       };
 
       expect(isProblemDetails(valid)).toBe(true);
@@ -238,22 +247,25 @@ describe("@batkit/rfc9457", () => {
 
     it("should return false for invalid objects", () => {
       expect(isProblemDetails(null)).toBe(false);
-      expect(isProblemDetails(undefined)).toBe(false);
-      expect(isProblemDetails({})).toBe(true); // Empty object is valid (all fields optional)
+      expect(isProblemDetails()).toBe(false);
+      // Empty object is valid (all fields optional)
+      expect(isProblemDetails({})).toBe(true);
       expect(isProblemDetails({ status: "invalid" })).toBe(false);
       expect(isProblemDetails("string")).toBe(false);
-      expect(isProblemDetails(123)).toBe(false);
+      const notAnObject = 123;
+      expect(isProblemDetails(notAnObject)).toBe(false);
     });
 
     it("should narrow type when used as type guard", () => {
+      const notFoundStatus = 404;
       const maybeProb: unknown = {
+        status: notFoundStatus,
         type: "about:blank",
-        status: 404,
       };
 
       if (isProblemDetails(maybeProb)) {
         // TypeScript should know this is ProblemDetails
-        expect(maybeProb.status).toBe(404);
+        expect(maybeProb.status).toBe(notFoundStatus);
       }
     });
   });
@@ -261,8 +273,8 @@ describe("@batkit/rfc9457", () => {
   describe("TypeScript types", () => {
     it("should export ProblemDetails type", () => {
       const problem: ProblemDetails = {
-        type: "about:blank",
         status: 404,
+        type: "about:blank",
       };
 
       expect(problem).toBeDefined();
@@ -270,9 +282,9 @@ describe("@batkit/rfc9457", () => {
 
     it("should export ExtendedProblemDetails type", () => {
       const problem: ExtendedProblemDetails = {
-        type: "about:blank",
-        status: 400,
         customField: "value",
+        status: 400,
+        type: "about:blank",
       };
 
       expect(problem.customField).toBe("value");
@@ -287,11 +299,11 @@ describe("@batkit/rfc9457", () => {
 
     it("should support all standard fields", () => {
       const problem: ProblemDetails = {
-        type: "https://example.com/probs/out-of-credit",
-        title: "You do not have enough credit.",
-        status: 403,
         detail: "Your current balance is 30, but that costs 50.",
         instance: "/account/12345/msgs/abc",
+        status: 403,
+        title: "You do not have enough credit.",
+        type: "https://example.com/probs/out-of-credit",
       };
 
       expect(validateProblemDetails(problem).success).toBe(true);
@@ -299,17 +311,17 @@ describe("@batkit/rfc9457", () => {
 
     it("should allow extension members", () => {
       const problem = createExtendedProblemDetails({
-        type: "https://example.com/probs/out-of-credit",
-        status: 403,
-        balance: 30,
         accounts: ["/account/12345", "/account/67890"],
+        balance: 30,
+        status: 403,
+        type: "https://example.com/probs/out-of-credit",
       });
 
       expect(problem).toEqual({
-        type: "https://example.com/probs/out-of-credit",
-        status: 403,
-        balance: 30,
         accounts: ["/account/12345", "/account/67890"],
+        balance: 30,
+        status: 403,
+        type: "https://example.com/probs/out-of-credit",
       });
     });
   });

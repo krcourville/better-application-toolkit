@@ -21,7 +21,7 @@ import type { Logger, LoggerProvider } from "./types.js";
  * ```
  */
 
-let _provider: LoggerProvider = new ConsoleLoggerProvider();
+let moduleProvider: LoggerProvider = new ConsoleLoggerProvider();
 
 /**
  * Get a logger for a given name
@@ -29,7 +29,7 @@ let _provider: LoggerProvider = new ConsoleLoggerProvider();
  * @returns A Logger instance
  */
 function getLogger(name: string): Logger {
-  return _provider.getLogger(name);
+  return moduleProvider.getLogger(name);
 }
 
 /**
@@ -37,7 +37,7 @@ function getLogger(name: string): Logger {
  * @param provider - A LoggerProvider instance (e.g., ConsoleLoggerProvider, PinoLoggerProvider)
  */
 function setProvider(provider: LoggerProvider): void {
-  _provider = provider;
+  moduleProvider = provider;
 }
 
 /**
@@ -47,7 +47,7 @@ function setProvider(provider: LoggerProvider): void {
  */
 function configure(): void {
   // Create a new provider with the updated options
-  _provider = new ConsoleLoggerProvider();
+  moduleProvider = new ConsoleLoggerProvider();
 }
 
 /**
@@ -55,15 +55,15 @@ function configure(): void {
  * (useful for testing or advanced scenarios)
  */
 function getProvider(): LoggerProvider {
-  return _provider;
+  return moduleProvider;
 }
 
 /**
  * Namespace-style export for convenient module-level API
  */
 export const LoggerFacade = {
-  getLogger,
-  setProvider,
   configure,
+  getLogger,
   getProvider,
+  setProvider,
 };

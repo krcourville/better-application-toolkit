@@ -2,13 +2,13 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   pack: {
-    entry: ["src/index.ts"],
-    tsconfig: "./tsconfig.build.json",
-    format: ["esm", "cjs"],
-    dts: true,
-    sourcemap: true,
     clean: true,
+    dts: true,
+    entry: ["src/index.ts"],
+    format: ["esm", "cjs"],
     platform: "neutral",
+    sourcemap: true,
     target: "es2022",
+    tsconfig: "./tsconfig.build.json",
   },
 });

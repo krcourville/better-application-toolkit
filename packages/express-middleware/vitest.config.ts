@@ -2,12 +2,12 @@ import { defineConfig } from "vite-plus/test/config";
 
 export default defineConfig({
   test: {
-    globals: true,
-    environment: "node",
     coverage: {
+      exclude: ["**/*.test.ts", "**/*.spec.ts", "**/dist/**", "**/node_modules/**"],
       provider: "v8",
       reporter: ["text", "json", "html"],
-      exclude: ["**/*.test.ts", "**/*.spec.ts", "**/dist/**", "**/node_modules/**"],
     },
+    environment: "node",
+    globals: true,
   },
 });

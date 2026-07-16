@@ -7,6 +7,8 @@ import {
 } from "./async-local.js";
 import type { Logger, LoggerProvider } from "./types.js";
 
+const FIRST_CALL_INDEX = 0;
+
 function capturingProvider(): {
   provider: LoggerProvider;
   calls: unknown[][];
@@ -16,24 +18,24 @@ function capturingProvider(): {
     debug: vi.fn((...args: unknown[]) => {
       calls.push(args);
     }),
-    info: vi.fn((...args: unknown[]) => {
-      calls.push(args);
-    }),
-    warn: vi.fn((...args: unknown[]) => {
-      calls.push(args);
-    }),
     error: vi.fn((...args: unknown[]) => {
+      calls.push(args);
+    }),
+    info: vi.fn((...args: unknown[]) => {
       calls.push(args);
     }),
     mergeContext: vi.fn(),
     runWithContext,
+    warn: vi.fn((...args: unknown[]) => {
+      calls.push(args);
+    }),
   };
   return {
+    calls,
     provider: {
       getLogger: () => logger,
       isLogLevelEnabled: () => true,
     },
-    calls,
   };
 }
 
@@ -55,11 +57,15 @@ describe("runWithContext", () => {
     const seen: string[] = [];
     await Promise.all([
       runWithContext({ id: "a" }, async () => {
-        await new Promise((r) => setImmediate(r));
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
         seen.push(`a:${getLogContext()?.id as string}`);
       }),
       runWithContext({ id: "b" }, async () => {
-        await new Promise((r) => setImmediate(r));
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
         seen.push(`b:${getLogContext()?.id as string}`);
       }),
     ]);
@@ -98,7 +104,7 @@ describe("mergeLogContext", () => {
   });
 
   it("throws outside runWithContext", () => {
-    expect(() => mergeLogContext({ x: 1 })).toThrow(/runWithContext/);
+    expect(() => mergeLogContext({ key: 1 })).toThrow(/runWithContext/u);
   });
 });
 
@@ -112,7 +118,7 @@ describe("ContextualLoggerProvider", () => {
       log.info("hello", { extra: true });
     });
 
-    expect(calls[0]).toEqual(["hello", { requestId: "req-1", extra: true }]);
+    expect(calls[FIRST_CALL_INDEX]).toEqual(["hello", { extra: true, requestId: "req-1" }]);
   });
 
   it("lets call-site context override ALS keys", () => {
@@ -124,7 +130,7 @@ describe("ContextualLoggerProvider", () => {
       log.info("x", { requestId: "inner" });
     });
 
-    expect(calls[0]).toEqual(["x", { requestId: "inner" }]);
+    expect(calls[FIRST_CALL_INDEX]).toEqual(["x", { requestId: "inner" }]);
   });
 
   it("merges into error overloads", () => {
@@ -137,7 +143,7 @@ describe("ContextualLoggerProvider", () => {
       log.error(err, "nope", { step: 2 });
     });
 
-    expect(calls[0]).toEqual([err, "nope", { rid: "r", step: 2 }]);
+    expect(calls[FIRST_CALL_INDEX]).toEqual([err, "nope", { rid: "r", step: 2 }]);
   });
 
   it("exposes mergeContext on the logger", () => {
@@ -152,7 +158,10 @@ describe("ContextualLoggerProvider", () => {
         transactionId: "t-merge",
       });
       log.info("after merge");
-      expect(calls[0]).toEqual(["after merge", { requestId: "r0", transactionId: "t-merge" }]);
+      expect(calls[FIRST_CALL_INDEX]).toEqual([
+        "after merge",
+        { requestId: "r0", transactionId: "t-merge" },
+      ]);
     });
   });
 
@@ -165,6 +174,6 @@ describe("ContextualLoggerProvider", () => {
       log.info("inside job");
     });
 
-    expect(calls[0]).toEqual(["inside job", { jobId: "j1" }]);
+    expect(calls[FIRST_CALL_INDEX]).toEqual(["inside job", { jobId: "j1" }]);
   });
 });

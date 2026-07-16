@@ -1,10 +1,23 @@
-import { LoggerFacade } from "@batkit/logger";
-import type { Logger, LoggerProvider, LogLevel, LogValue } from "@batkit/logger";
+import {
+  type LogLevel,
+  type LogValue,
+  type Logger,
+  LoggerFacade,
+  type LoggerProvider,
+} from "@batkit/logger";
 import { fromPartial } from "@total-typescript/shoehorn";
 import type { Request, Response } from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { DefaultErrorFormatter } from "./error-handler.js";
-import type { errorHandler as ErrorHandlerFn } from "./error-handler.js";
+import { DefaultErrorFormatter, type errorHandler as ErrorHandlerFn } from "./error-handler.js";
+
+const HttpStatus = {
+  UNPROCESSABLE_ENTITY: 422,
+} as const;
+
+const FIRST_CALL_INDEX = 0;
+const SINGLE_LOG_CALL = 1;
+// oxlint-disable-next-line no-magic-numbers -- these are the well-known JPEG magic-number byte signature; naming each byte separately would hurt readability, not help.
+const JPEG_MAGIC_BYTES = [0xff, 0xd8, 0xff];
 
 class RecordingLogger implements Logger {
   calls: unknown[][] = [];
@@ -14,7 +27,7 @@ class RecordingLogger implements Logger {
   warn: Logger["warn"] = (...args: unknown[]) => this.calls.push(args);
   error: Logger["error"] = (...args: unknown[]) => this.calls.push(args);
   mergeContext(): void {}
-  runWithContext<T>(_initial: Record<string, LogValue>, fn: () => T): T {
+  runWithContext<Result>(_initial: Record<string, LogValue>, fn: () => Result): Result {
     return fn();
   }
 }
@@ -35,10 +48,10 @@ describe("errorHandler logging", () => {
   let errorHandler: typeof ErrorHandlerFn;
 
   beforeEach(async () => {
-    // error-handler.ts binds its logger at module-eval time via
+    // Error-handler.ts binds its logger at module-eval time via
     // LoggerFacade.getLogger(), so both @batkit/logger and error-handler.ts
-    // must be freshly imported (after resetModules) with the recording
-    // provider installed before that binding happens.
+    // Must be freshly imported (after resetModules) with the recording
+    // Provider installed before that binding happens.
     originalProvider = LoggerFacade.getProvider();
     provider = new RecordingLoggerProvider();
     vi.resetModules();
@@ -55,22 +68,25 @@ describe("errorHandler logging", () => {
   it("logs request query under `query`, not `querd`/`consoley`", async () => {
     const handler = errorHandler();
     const req = fromPartial<Request>({
-      path: "/widgets",
-      method: "GET",
-      query: { id: "42" },
       body: {},
+      method: "GET",
+      path: "/widgets",
+      query: { id: "42" },
     });
     const res = fromPartial<Response>({
       headersSent: false,
-      status: () => res,
-      set: () => res,
       json: () => res,
+      set: () => res,
+      status: () => res,
     });
 
     handler(new Error("boom"), req, res, () => {});
 
-    expect(provider.logger.calls).toHaveLength(1);
-    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+    expect(provider.logger.calls).toHaveLength(SINGLE_LOG_CALL);
+    const [, context] = provider.logger.calls[FIRST_CALL_INDEX] as [
+      unknown,
+      Record<string, unknown>,
+    ];
 
     expect(context.query).toEqual({ id: "42" });
     expect(context.method).toBe("GET");
@@ -81,72 +97,82 @@ describe("errorHandler logging", () => {
   it("omits raw body and logs content-type+length when body is binary", async () => {
     const handler = errorHandler();
     const req = fromPartial<Request>({
-      path: "/upload",
-      method: "POST",
-      query: {},
-      body: Buffer.from([0xff, 0xd8, 0xff]),
+      body: Buffer.from(JPEG_MAGIC_BYTES),
       headers: { "content-type": "image/jpeg" },
+      method: "POST",
+      path: "/upload",
+      query: {},
     });
     const res = fromPartial<Response>({
       headersSent: false,
-      status: () => res,
-      set: () => res,
       json: () => res,
+      set: () => res,
+      status: () => res,
     });
 
     handler(new Error("boom"), req, res, () => {});
 
-    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+    const [, context] = provider.logger.calls[FIRST_CALL_INDEX] as [
+      unknown,
+      Record<string, unknown>,
+    ];
 
     expect(context.body).toBeUndefined();
     expect(context.bodyContentType).toBe("image/jpeg");
-    expect(context.bodyLength).toBe(3);
+    expect(context.bodyLength).toBe(JPEG_MAGIC_BYTES.length);
   });
 
   it("omits raw body and logs content-type+length when body is non-Buffer but content-type is non-JSON", async () => {
     const handler = errorHandler();
+    const rawTextBody = "raw plain text body";
     const req = fromPartial<Request>({
-      path: "/upload",
-      method: "POST",
-      query: {},
-      body: "raw plain text body",
+      body: rawTextBody,
       headers: { "content-type": "text/plain" },
+      method: "POST",
+      path: "/upload",
+      query: {},
     });
     const res = fromPartial<Response>({
       headersSent: false,
-      status: () => res,
-      set: () => res,
       json: () => res,
+      set: () => res,
+      status: () => res,
     });
 
     handler(new Error("boom"), req, res, () => {});
 
-    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+    const [, context] = provider.logger.calls[FIRST_CALL_INDEX] as [
+      unknown,
+      Record<string, unknown>,
+    ];
 
     expect(context.body).toBeUndefined();
     expect(context.bodyContentType).toBe("text/plain");
-    expect(context.bodyLength).toBe(19);
+    expect(context.bodyLength).toBe(rawTextBody.length);
   });
 
   it("still logs body when not binary", async () => {
     const handler = errorHandler();
     const req = fromPartial<Request>({
-      path: "/widgets",
-      method: "POST",
-      query: {},
       body: { name: "widget" },
       headers: { "content-type": "application/json" },
+      method: "POST",
+      path: "/widgets",
+      query: {},
     });
     const res = fromPartial<Response>({
       headersSent: false,
-      status: () => res,
-      set: () => res,
       json: () => res,
+      set: () => res,
+      status: () => res,
     });
 
     handler(new Error("boom"), req, res, () => {});
 
-    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+    const [, context] = provider.logger.calls[FIRST_CALL_INDEX] as [
+      unknown,
+      Record<string, unknown>,
+    ];
 
     expect(context.body).toEqual({ name: "widget" });
     expect(context.bodyContentType).toBeUndefined();
@@ -158,11 +184,11 @@ describe("DefaultErrorFormatter", () => {
   it("formats zod errors with 422 status, not 400", () => {
     const formatter = new DefaultErrorFormatter();
     const zodError = {
-      issues: [{ path: ["name"], message: "Required", code: "invalid_type" }],
+      issues: [{ code: "invalid_type", message: "Required", path: ["name"] }],
     };
 
     const result = formatter.format(zodError);
 
-    expect(result.status).toBe(422);
+    expect(result.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
   });
 });

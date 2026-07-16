@@ -8,6 +8,12 @@ import {
 import type { NextFunction, Request, Response } from "express";
 
 const logger = LoggerFacade.getLogger("error-handler");
+
+const HttpStatus = {
+  BAD_GATEWAY: 502,
+  INTERNAL_SERVER_ERROR: 500,
+  UNPROCESSABLE_ENTITY: 422,
+} as const;
 /**
  * Interface for custom error formatters
  */
@@ -55,19 +61,19 @@ export class DefaultErrorFormatter implements ErrorFormatter {
     // Handle generic Error
     if (error instanceof Error) {
       return createExtendedProblemDetails({
-        type: "error:internal",
-        title: "Internal Server Error",
-        status: 500,
         detail: error.message,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        title: "Internal Server Error",
+        type: "error:internal",
       });
     }
 
     // Unknown error type
     return createExtendedProblemDetails({
-      type: "error:unknown",
-      title: "Unknown Error",
-      status: 500,
       detail: "An unknown error occurred",
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      title: "Unknown Error",
+      type: "error:unknown",
     });
   }
 
@@ -90,30 +96,31 @@ export class DefaultErrorFormatter implements ErrorFormatter {
   }
 
   private formatAxiosError(error: Record<string, unknown>): ExtendedProblemDetails {
-    const status = ((error.response as Record<string, unknown>)?.status as number) || 502;
+    const status =
+      ((error.response as Record<string, unknown>)?.status as number) || HttpStatus.BAD_GATEWAY;
     return createExtendedProblemDetails({
-      type: "error:upstream",
-      title: "Upstream Service Error",
-      status,
       detail: error.message as string,
-      upstreamUrl: (error.config as Record<string, unknown>)?.url as string | undefined,
+      status,
+      title: "Upstream Service Error",
+      type: "error:upstream",
       upstreamMethod: ((error.config as Record<string, unknown>)?.method as string)?.toUpperCase(),
       upstreamStatus: (error.response as Record<string, unknown>)?.status as number | undefined,
+      upstreamUrl: (error.config as Record<string, unknown>)?.url as string | undefined,
     });
   }
 
   private formatZodError(error: Record<string, unknown>): ExtendedProblemDetails {
-    const validationErrors = (error.issues as Array<Record<string, unknown>>).map((issue) => ({
+    const validationErrors = (error.issues as Record<string, unknown>[]).map((issue) => ({
+      code: issue.code as string,
       field: (issue.path as unknown[]).join("."),
       message: issue.message as string,
-      code: issue.code as string,
     }));
 
     return createExtendedProblemDetails({
-      type: "error:validation",
-      title: "Validation Error",
-      status: 422,
       detail: "Request validation failed",
+      status: HttpStatus.UNPROCESSABLE_ENTITY,
+      title: "Validation Error",
+      type: "error:validation",
       validationErrors,
     });
   }
@@ -137,6 +144,57 @@ export interface ErrorHandlerOptions {
    * Custom error logger function
    */
   onError?: (error: unknown, req: Request) => void;
+}
+
+function logHandledError(error: Error, req: Request, options: ErrorHandlerOptions): void {
+  const { onError } = options;
+  if (onError) {
+    onError(error, req);
+    return;
+  }
+
+  if (isAppError(error) && error.isOperational) {
+    logger.warn("Operational error occurred", {
+      code: error.code,
+      error: error.message,
+      method: req.method,
+      path: req.path,
+      statusCode: error.statusCode,
+    });
+    return;
+  }
+
+  const contentType = req.headers?.["content-type"];
+  const isJsonContentType =
+    typeof contentType === "string" && /^application\/(?:[^;]+\+)?json/iu.test(contentType);
+  const isBinaryBody =
+    Buffer.isBuffer(req.body) || (contentType !== undefined && !isJsonContentType);
+
+  let bodyLength: number | undefined;
+  if (Buffer.isBuffer(req.body)) {
+    bodyLength = req.body.length;
+  } else if (typeof req.body === "string") {
+    bodyLength = Buffer.byteLength(req.body);
+  }
+
+  logger.error(error, {
+    method: req.method,
+    path: req.path,
+    query: req.query,
+    ...(isBinaryBody ? { bodyContentType: contentType, bodyLength } : { body: req.body }),
+  });
+}
+
+function buildProblemDetails(error: Error, formatters: ErrorFormatter[]): ExtendedProblemDetails {
+  const formatter = formatters.find((candidate) => candidate.canFormat(error));
+  return formatter
+    ? formatter.format(error)
+    : createExtendedProblemDetails({
+        detail: "An unexpected error occurred",
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        title: "Internal Server Error",
+        type: "error:internal",
+      });
 }
 
 /**
@@ -163,9 +221,11 @@ export interface ErrorHandlerOptions {
  */
 export function errorHandler(
   options: ErrorHandlerOptions = {},
+  // oxlint-disable-next-line max-params -- Express detects error-handling middleware by function arity; this signature must stay exactly (error, req, res, next).
 ): (error: Error, req: Request, res: Response, next: NextFunction) => void {
-  const { formatters = [new DefaultErrorFormatter()], logErrors = true, onError } = options;
+  const { formatters = [new DefaultErrorFormatter()], logErrors = true } = options;
 
+  // oxlint-disable-next-line max-params -- see above, Express requires this exact arity.
   return (error: Error, req: Request, res: Response, next: NextFunction): void => {
     // If headers already sent, delegate to default Express error handler
     if (res.headersSent) {
@@ -173,60 +233,11 @@ export function errorHandler(
       return;
     }
 
-    // Log the error
     if (logErrors) {
-      if (onError) {
-        onError(error, req);
-      } else {
-        if (isAppError(error) && error.isOperational) {
-          logger.warn("Operational error occurred", {
-            error: error.message,
-            code: error.code,
-            statusCode: error.statusCode,
-            path: req.path,
-            method: req.method,
-          });
-        } else {
-          const contentType = req.headers?.["content-type"];
-          const isJsonContentType =
-            typeof contentType === "string" && /^application\/(?:[^;]+\+)?json/i.test(contentType);
-          const isBinaryBody =
-            Buffer.isBuffer(req.body) || (contentType !== undefined && !isJsonContentType);
-
-          logger.error(error, {
-            path: req.path,
-            method: req.method,
-            query: req.query,
-            ...(isBinaryBody
-              ? {
-                  bodyContentType: contentType,
-                  bodyLength: Buffer.isBuffer(req.body)
-                    ? req.body.length
-                    : typeof req.body === "string"
-                      ? Buffer.byteLength(req.body)
-                      : undefined,
-                }
-              : { body: req.body }),
-          });
-        }
-      }
+      logHandledError(error, req, options);
     }
 
-    // Format the error
-    let problemDetails: ExtendedProblemDetails;
-
-    const formatter = formatters.find((f) => f.canFormat(error));
-    if (formatter) {
-      problemDetails = formatter.format(error);
-    } else {
-      // Fallback to generic error
-      problemDetails = createExtendedProblemDetails({
-        type: "error:internal",
-        title: "Internal Server Error",
-        status: 500,
-        detail: "An unexpected error occurred",
-      });
-    }
+    const problemDetails = buildProblemDetails(error, formatters);
 
     // Add stack trace
     if (error.stack) {
@@ -240,7 +251,7 @@ export function errorHandler(
 
     // Send RFC 9457 response
     res
-      .status(problemDetails.status || 500)
+      .status(problemDetails.status || HttpStatus.INTERNAL_SERVER_ERROR)
       .set("Content-Type", PROBLEM_DETAILS_CONTENT_TYPE)
       .json(problemDetails);
   };

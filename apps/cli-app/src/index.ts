@@ -17,11 +17,13 @@ async function main(): Promise<void> {
 
   const processor = new TransactionProcessor();
 
-  for (const transactionId of transactionIds) {
-    await logger.runWithContext({ transactionId }, async () => {
-      await processor.process(transactionId);
-    });
-  }
+  await Promise.all(
+    transactionIds.map((transactionId) =>
+      logger.runWithContext({ transactionId }, async () => {
+        await processor.process(transactionId);
+      }),
+    ),
+  );
 
   logger.info("Finished processing");
 }

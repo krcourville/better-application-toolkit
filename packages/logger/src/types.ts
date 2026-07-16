@@ -34,8 +34,7 @@ export type LogValue =
  */
 export interface LogMethod {
   (context: Record<string, LogValue>): void;
-  (msg: string, context?: Record<string, LogValue>): void;
-  (error: Error, context?: Record<string, LogValue>): void;
+  (msg: string | Error, context?: Record<string, LogValue>): void;
   (error: Error, msg?: string, context?: Record<string, LogValue>): void;
 }
 
@@ -62,7 +61,7 @@ export interface Logger {
    * `@batkit/logger/async-local`). Prefer this on the logger when you already have a
    * logger reference and want to avoid a separate import.
    */
-  runWithContext<T>(initial: Record<string, LogValue>, fn: () => T): T;
+  runWithContext<Result>(initial: Record<string, LogValue>, fn: () => Result): Result;
 }
 
 /**

@@ -2,40 +2,42 @@ import { extendZodWithOpenApi } from "@anatine/zod-openapi";
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 
-const c = initContract();
+const contract = initContract();
 
 extendZodWithOpenApi(z);
 
+const MIN_LENGTH = 1;
+
 const FulfillmentItemSchema = z
   .object({
-    sku: z.string().min(1).openapi({ example: "SKU-1" }),
     qty: z.number().int().positive().openapi({ example: 2 }),
+    sku: z.string().min(MIN_LENGTH).openapi({ example: "SKU-1" }),
   })
   .openapi({
-    example: { sku: "SKU-1", qty: 2 },
+    example: { qty: 2, sku: "SKU-1" },
   });
 
-export const demoContract = c.router({
+export const demoContract = contract.router({
   fulfillment: {
-    method: "POST",
-    path: "/demo/fulfillment",
     body: z
       .object({
-        orderId: z.string().min(1).openapi({ example: "ord-100" }),
-        items: z.array(FulfillmentItemSchema).min(1),
+        items: z.array(FulfillmentItemSchema).min(MIN_LENGTH),
+        orderId: z.string().min(MIN_LENGTH).openapi({ example: "ord-100" }),
       })
       .openapi({
         example: {
+          items: [{ qty: 1, sku: "SKU-1" }],
           orderId: "ord-100",
-          items: [{ sku: "SKU-1", qty: 1 }],
         },
       }),
+    method: "POST",
+    path: "/demo/fulfillment",
     responses: {
       200: z.object({
         data: z.object({
-          transactionId: z.string(),
           orderId: z.string(),
           status: z.literal("fulfilled"),
+          transactionId: z.string(),
         }),
       }),
     },
