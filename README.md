@@ -126,7 +126,10 @@ MIT © Ken Courville
 ## Learn More
 
 - [Vite+](https://viteplus.dev/) — unified `vp` toolchain (install, run, check, test, pack)
-- [RFC 9457 - Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457.html)
-- [Express.js Documentation](https://expressjs.com/)
-- [Pino Logger](https://getpino.io/)
-- [Changesets](https://github.com/changesets/changesets)
+- [RFC 9457 - Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc9457.html) — the HTTP problem-details standard `@batkit/rfc9457` schemas implement
+- [Express.js Documentation](https://expressjs.com/) — the web framework `@batkit/express-middleware` targets
+- [Pino Logger](https://getpino.io/) — high-performance JSON logger backing `@batkit/logger-pino`
+- [Changesets](https://github.com/changesets/changesets) — versioning/changelog tool driving `pnpm changeset` and releases
+- [knip](https://knip.dev/) — unused files/deps/exports check (`pnpm knip`)
+- [publint](https://publint.dev/) — package.json/exports validation (`pnpm publint`)
+- [Are the Types Wrong?](https://arethetypeswrong.github.io/) — dual ESM/CJS type resolution check (`pnpm attw`)
