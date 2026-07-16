@@ -216,6 +216,9 @@ Run these from the **repository root**. They map to [`package.json`](./package.j
 | `vp run check`, `vp run lint` | Same as `vp check` (script aliases)                                           |
 | `vp run lint:fix`             | `vp check --fix`                                                              |
 | `vp run typecheck`            | `tsc --noEmit` in every workspace package                                     |
+| `pnpm knip`                   | Unused files/deps/exports check ([knip](https://knip.dev/)); same command CI runs |
+| `pnpm publint`                | package.json/exports validation per publishable package ([publint](https://publint.dev/)) |
+| `pnpm attw`                   | Dual ESM/CJS type-resolution check per publishable package ([Are the Types Wrong?](https://arethetypeswrong.github.io/)) |
 | `vp run cli`                  | Build and run the `cli-app` demo                                              |
 | `vp run release`              | Build, then Changesets publish                                                |
 | `vp run changeset`            | Interactive Changesets CLI                                                    |
@@ -224,6 +227,14 @@ Run these from the **repository root**. They map to [`package.json`](./package.j
 | `vp run stop-server`          | Kill anything listening on port **3785**                                      |
 
 Inside an individual package directory you can still use **`vp pack`**, **`vp test`**, or **`vp check`** directly; the table above covers the usual **root** workflows.
+
+> **Never run `npx <tool>` in this repo.** `npx` is shadowed by a vite-plus wrapper binary that silently fans a command out across every workspace instead of running it once at root (e.g. `npx knip` ignores root `knip.json`). Use the `pnpm` script (`pnpm knip`) or the local bin directly (`./node_modules/.bin/knip`).
+
+## Continuous Integration
+
+Every PR and push to `main` runs [`.github/workflows/ci.yml`](./.github/workflows/ci.yml): `vp install` → build → `publint` → `attw` → `vp check` → typecheck → `knip` → test. All steps must pass before merge. Reproduce it locally with the same commands in the same order (see table above) — no CI-only flags.
+
+Merges to `main` also trigger [`.github/workflows/release.yml`](./.github/workflows/release.yml), which only publishes if CI succeeded on that commit and only packages with a pending changeset.
 
 ## Adding a Changeset
 
