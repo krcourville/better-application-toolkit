@@ -86,7 +86,7 @@ T25|x|`express-middleware` error-handler.ts: broaden binary-body guard to check 
 T26|x|`apps/express-api`: reorder RFC9457 ts-rest interceptor middleware before `createExpressEndpoints()`, or refactor off `res.json` patch pattern|V21,B17
 T27|x|`apps/express-api` demo/fulfillment-pipeline: add rollback (compensating deduction) on partial-order failure|B18
 T28|x|`apps/express-api` users/handlers: replace `users.size+1` id gen w/ monotonic counter or `randomUUID`|B19
-T29|.|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-literal backticks in delay log line|B20
+T29|x|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-literal backticks in delay log line|B20
 
 ## §B BUGS
 
