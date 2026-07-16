@@ -1,5 +1,17 @@
 # @batkit/express-middleware
 
+## 0.1.5
+
+### Patch Changes
+
+- 5d9f397: Internal cleanup only, no behavior change: split `errorHandler`'s logging and problem-details-building logic into two named helper functions (both were over the `max-lines-per-function` threshold), replaced a nested ternary with an if/else, and extracted hardcoded HTTP status literals into a shared `HttpStatus` map.
+- Updated dependencies [5d9f397]
+- Updated dependencies [5d9f397]
+- Updated dependencies [5d9f397]
+  - @batkit/errors@0.1.3
+  - @batkit/logger@0.1.2
+  - @batkit/rfc9457@0.1.2
+
 ## 0.1.4
 
 ### Patch Changes

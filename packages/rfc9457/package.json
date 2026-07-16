@@ -1,6 +1,6 @@
 {
   "name": "@batkit/rfc9457",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Zod schemas and TypeScript types for RFC 9457 (Problem Details for HTTP APIs)",
   "keywords": [
     "api",

@@ -1,5 +1,14 @@
 # cli-app
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [5d9f397]
+- Updated dependencies [5d9f397]
+  - @batkit/logger-pino@0.1.2
+  - @batkit/logger@0.1.2
+
 ## 1.0.1
 
 ### Patch Changes
