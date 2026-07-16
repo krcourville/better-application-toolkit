@@ -111,8 +111,8 @@ app.listen(3000);
 - [x] Bootstrap project
 - [x] Bootstrap libraries and reference apps
 - [x] Add documentation of recommendations
-- [ ] Establish CI pipeline
-- [ ] Deploy a beta release to npmjs.com
+- [x] Establish CI pipeline
+- [x] Deploy a beta release to npmjs.com
 - [ ] Add recommendations for alarms/alerts
 
 ## Contributing
