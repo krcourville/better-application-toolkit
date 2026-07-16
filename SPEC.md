@@ -65,7 +65,7 @@ T11|x|eval knip: add as root devDep, add `knip.json`/`knip.jsonc` w/ workspace e
 T12|x|fix or allowlist T11 findings (dead exports/deps) until `pnpm knip` exits 0|T11
 T13|x|add `knip` script to root `package.json` (`pnpm knip`), wire as CI step in `ci.yml` after typecheck|V9,T12
 T14|x|confirm local `pnpm knip` reproduces CI result exactly (same config/cmd)|V10,T13
-T15|.|eval publint+attw: add as root devDeps, run once per pkg against dist/, review findings across 5 pkgs|I.cmd
+T15|x|eval publint+attw: add as root devDeps, run once per pkg against dist/, review findings across 5 pkgs. results: publint 0 errors all 5 (suggestions only: repo.url format, missing `sideEffects`). attw 0 problems on 4/5; `@batkit/logger` `/console`+`/async-local` subpaths fail node10 resolution (expected, exports-map subpaths predate node10 exports support; main entry green all targets)|I.cmd
 T16|.|fix or allowlist T15 findings until both exit 0 across all 5 pkgs|T15
 T17|.|add `publint`/`attw` scripts to root package.json, wire as CI steps after build|V12,V13,T16
 T18|.|confirm local repro matches CI exactly (recall V11: use direct bins, ⊥ `npx`)|V14,T17
