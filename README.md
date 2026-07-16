@@ -52,13 +52,13 @@ Better Application Toolkit (BAT) is a suite of TypeScript packages designed to i
 
 ## Features
 
-✨ **Universal Design** - Most packages work in both Node.js and browser environments
-🎯 **Type-Safe** - Full TypeScript support with exported types
-📦 **Dual Module Format** - ESM and CommonJS builds for maximum compatibility
-🧪 **Well Tested** - Comprehensive test coverage with Vitest
-📚 **Standards-Based** - Implements RFC 9457 for standardized error responses
-🔍 **Observable** - Built-in structured logging and request context tracking
-⚡ **Modern** - Leverages AsyncLocalStorage and other modern Node.js features
+- ✨ **Universal Design** - Most packages work in both Node.js and browser environments
+- 🎯 **Type-Safe** - Full TypeScript support with exported types
+- 📦 **Dual Module Format** - ESM and CommonJS builds for maximum compatibility
+- 🧪 **Well Tested** - Comprehensive test coverage with Vitest
+- 📚 **Standards-Based** - Implements RFC 9457 for standardized error responses
+- 🔍 **Observable** - Built-in structured logging and request context tracking
+- ⚡ **Modern** - Leverages AsyncLocalStorage and other modern Node.js features
 
 ## Quick Start
 
