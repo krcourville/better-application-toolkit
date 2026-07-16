@@ -7,4 +7,11 @@ export default defineConfig({
       tasks: true,
     },
   },
+  lint: {
+    rules: {
+      "no-template-curly-in-string": "error",
+      eqeqeq: "error",
+      "typescript/no-misused-promises": "error",
+    },
+  },
 });
