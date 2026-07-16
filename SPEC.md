@@ -93,7 +93,7 @@ T29|x|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-lite
 T30|x|API surface freeze review: audit each pkg `src/index.ts` exports (errors:22, rfc9457:11, logger:4, logger-pino:2, express-middleware:2) for rename/remove before 1.0 lock-in. all 5 surfaces clean, consistent naming, minimal — no changes needed|V22
 T31|x|README.md: line ~115 still said "Deploy a beta release" — kept as historical done item, added new TODO line "Publish 1.0.0 stable release"|V22
 T32|x|verify each pkg README + CHANGELOG.md reflect current API, no stale pre-1.0 examples. found+fixed B21: logger-pino README fabricated API, errors README stale AppError ctor + wrong toJSON claim + typo, express-middleware README unexported RequestContext type|V22,B21
-T33|.|`pnpm changeset`: major bump all 5 pkgs → 1.0.0 in single changeset (synced version)|V23
+T33|x|`pnpm changeset`: major bump all 5 pkgs → 1.0.0 in single changeset (synced version). `.changeset/v1-0-0-release.md` written, `changeset status` confirms all 5 @ major, `cli-app` patch-bump as workspace dependent expected (already precedented, @ 1.0.2)|V23
 T34|.|dry-run verify (`npm publish --dry-run` per pkg) before merge, reconfirm V7 holds at 1.0|V7,T33
 T35|.|merge → release workflow publishes 1.0.0 all 5 pkgs, verify via `npm view @batkit/<pkg> version`|T33,T34
 
