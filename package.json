@@ -33,6 +33,8 @@
     "lint:fix": "vp check --fix",
     "typecheck": "vp run -r --cache typecheck",
     "knip": "knip",
+    "publint": "for p in rfc9457 errors logger logger-pino express-middleware; do ./node_modules/.bin/publint packages/$p || exit 1; done",
+    "attw": "for p in rfc9457 errors logger logger-pino express-middleware; do (cd packages/$p && ../../node_modules/.bin/attw --pack . --profile node16) || exit 1; done",
     "clean": "rm -rf node_modules pnpm-lock.yaml .pnpm-store && vp run -r clean",
     "dev": "LOCAL_DEV=true vp run --filter express-api... dev",
     "changeset": "changeset",
