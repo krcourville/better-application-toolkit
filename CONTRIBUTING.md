@@ -171,8 +171,8 @@ See [`vp add` / `vp install`](https://viteplus.dev/guide/install) for workspace-
 **Troubleshooting:**
 
 ```bash
-# Nuclear clean (root "clean" script: removes root node_modules, lockfile, then cleans all packages)
-vp run clean
+# Nuclear clean: removes root node_modules, lockfile, then cleans all packages
+rm -rf node_modules pnpm-lock.yaml .pnpm-store && vp run -r clean
 vp install
 
 # Clean only build artifacts, then full rebuild
@@ -223,7 +223,6 @@ Run these from the **repository root**. They map to [`package.json`](./package.j
 | `vp run release`              | Build, then Changesets publish                                                                                           |
 | `vp run changeset`            | Interactive Changesets CLI                                                                                               |
 | `vp run version-packages`     | Apply version bumps from changesets                                                                                      |
-| `vp run clean`                | Remove root `node_modules` and lockfile, then clean all packages                                                         |
 | `vp run stop-server`          | Kill anything listening on port **3785**                                                                                 |
 
 Inside an individual package directory you can still use **`vp pack`**, **`vp test`**, or **`vp check`** directly; the table above covers the usual **root** workflows.
