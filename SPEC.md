@@ -52,6 +52,8 @@ V18: error-handler response ! gate stack trace behind `includeStack` option — 
 V19: zod validation error format ! return 400 — use 422 (Unprocessable Entity); request syntactically valid, semantically invalid
 V20: all validation-error response paths ! same status — thrown `ValidationError` class & zod-driven `formatZodError` both ! return 422, ⊥ diverge by which code path caught the failure
 V21: any error-formatting middleware wrapping ts-rest routes (e.g. `res.json` patch) ! register BEFORE `createExpressEndpoints()` — ts-rest handlers respond direct via `res.json()` w/out calling `next()`, middleware added after registration never fires for matched routes
+V22: v1.0.0 ! signal public API stability commitment — breaking change post-1.0 ! major bump (semver)
+V23: all 5 pkgs ! release 1.0.0 together in 1 changeset (synced versioning, ⊥ mixed 0.x/1.x across workspace)
 
 ## §T TASKS
 
@@ -87,6 +89,12 @@ T26|x|`apps/express-api`: reorder RFC9457 ts-rest interceptor middleware before 
 T27|x|`apps/express-api` demo/fulfillment-pipeline: add rollback (compensating deduction) on partial-order failure|B18
 T28|x|`apps/express-api` users/handlers: replace `users.size+1` id gen w/ monotonic counter or `randomUUID`|B19
 T29|x|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-literal backticks in delay log line|B20
+T30|x|API surface freeze review: audit each pkg `src/index.ts` exports (errors:22, rfc9457:11, logger:4, logger-pino:2, express-middleware:2) for rename/remove before 1.0 lock-in. all 5 surfaces clean, consistent naming, minimal — no changes needed|V22
+T31|.|README.md: line ~115 still says "Deploy a beta release" — update wording/badges off beta framing for 1.0|V22
+T32|.|verify each pkg README + CHANGELOG.md reflect current API, no stale pre-1.0 examples|V22
+T33|.|`pnpm changeset`: major bump all 5 pkgs → 1.0.0 in single changeset (synced version)|V23
+T34|.|dry-run verify (`npm publish --dry-run` per pkg) before merge, reconfirm V7 holds at 1.0|V7,T33
+T35|.|merge → release workflow publishes 1.0.0 all 5 pkgs, verify via `npm view @batkit/<pkg> version`|T33,T34
 
 ## §B BUGS
 
