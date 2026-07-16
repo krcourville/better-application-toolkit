@@ -7,4 +7,9 @@ export default defineConfig({
       tasks: true,
     },
   },
+  lint: {
+    rules: {
+      "no-template-curly-in-string": "error",
+    },
+  },
 });
