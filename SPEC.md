@@ -94,7 +94,7 @@ T30|x|API surface freeze review: audit each pkg `src/index.ts` exports (errors:2
 T31|x|README.md: line ~115 still said "Deploy a beta release" — kept as historical done item, added new TODO line "Publish 1.0.0 stable release"|V22
 T32|x|verify each pkg README + CHANGELOG.md reflect current API, no stale pre-1.0 examples. found+fixed B21: logger-pino README fabricated API, errors README stale AppError ctor + wrong toJSON claim + typo, express-middleware README unexported RequestContext type|V22,B21
 T33|x|`pnpm changeset`: major bump all 5 pkgs → 1.0.0 in single changeset (synced version). `.changeset/v1-0-0-release.md` written, `changeset status` confirms all 5 @ major, `cli-app` patch-bump as workspace dependent expected (already precedented, @ 1.0.2)|V23
-T34|.|dry-run verify (`npm publish --dry-run` per pkg) before merge, reconfirm V7 holds at 1.0|V7,T33
+T34|x|dry-run verify (`npm publish --dry-run` per pkg) before merge, reconfirm V7 holds at 1.0. rebuilt, all 5 tarballs valid (correct dist/js+maps/package.json contents), only rejection = "cannot publish over 0.1.x" (expected, dry-run uses pre-bump version; 1.0.0 never published so real publish won't collide)|V7,T33
 T35|.|merge → release workflow publishes 1.0.0 all 5 pkgs, verify via `npm view @batkit/<pkg> version`|T33,T34
 
 ## §B BUGS
