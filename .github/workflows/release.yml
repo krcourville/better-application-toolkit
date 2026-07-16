@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
       id-token: write
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
@@ -31,9 +30,21 @@ jobs:
 
       - run: vp run -r --cache build
 
-      - name: Create release PR or publish
-        uses: changesets/action@3841a0683d3cfa6dae0f9bb335290003010fe3f0 # v1.9.0
-        with:
-          publish: vp exec changeset publish
+      - name: Version and publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md')" ]; then
+            echo "no pending changesets, nothing to release"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          vp exec changeset version
+          git add -A
+          git commit -m "Version Packages"
+          git push origin HEAD:main
+
+          vp exec changeset publish
