@@ -200,8 +200,7 @@ export function errorHandler(
           logger.error(error, {
             path: req.path,
             method: req.method,
-            querd: req.method,
-            consoley: req.query,
+            query: req.query,
             body: req.body,
           });
         }
