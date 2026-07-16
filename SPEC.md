@@ -45,6 +45,7 @@ V11: root knip cmd ! invoke via `npx` (repo's `npx` = vite-plus per-workspace wr
 V12: CI ! fail on any publint error across 5 publishable pkgs (warnings ? allowlist per pkg)
 V13: CI ! fail on any attw resolution problem across 5 publishable pkgs (unless allowlisted)
 V14: publint/attw ! run against built `dist/` ∴ CI step order after build (⊥ before)
+V15: ci.yml ! invoke workspace-tool scripts (publint/attw/knip) via `vp run <script>` (⊥ bare `pnpm <script>`) ∵ `setup-vp` action puts `vp` on PATH but ⊥ bare `pnpm` binary; raw `pnpm` steps fail `command not found`
 
 ## §T TASKS
 
@@ -83,3 +84,4 @@ B6|2026-07-16|CI ran `typecheck`/`test` before `build`. `@batkit/*` pkgs resolve
 B7|2026-07-16|`ci.yml` & `release.yml` both triggered on `push: branches:[main]` independently ∴ release could publish even if CI failed, no ordering guarantee. fix: release.yml now triggers on `workflow_run` of CI, gated `if: conclusion == 'success'`, checks out CI's exact commit sha|V8
 B8|2026-07-16|`npx knip` ran per-workspace via repo's vite-plus `npx` wrapper (`~/.vite-plus/bin/npx`), silently fanned out across all 7 workspaces & ignored root `knip.json` entirely. no error, exit 0, plausible-but-wrong (fewer) findings than real monorepo-aware run. fix: invoke `knip` bin direct (pnpm script / `node_modules/.bin`), ⊥ via `npx`/`pnpm dlx`|V11
 B9|2026-07-16|express-middleware error-handler logs error context w/ typo'd keys: `querd: req.method` (dup of `method`, wrong name) & `consoley: req.query` (typo, should be `query`). `req.query` never logged under correct key ∴ structured logs missing query params on unhandled errors. fix: T19|T19
+B10|2026-07-16|CI broken on `main` since T17 (3 consecutive pushes failed, incl. unrelated PR): `ci.yml` steps `pnpm publint`/`pnpm attw`/`pnpm knip` fail `command not found`. `setup-vp` action exposes `vp` on PATH, ⊥ bare `pnpm` binary ∴ any raw `pnpm <script>` CI step fails, only `vp run <script>`/`vp <cmd>` steps work. fix: ci.yml steps → `vp run publint`/`vp run attw`/`vp run knip`|V15
