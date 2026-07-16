@@ -1,6 +1,6 @@
 {
   "name": "@batkit/express-middleware",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Express middleware for error handling and request context (Node.js only)",
   "keywords": [
     "error-handling",

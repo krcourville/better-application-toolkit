@@ -1,5 +1,12 @@
 # @batkit/express-middleware
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [113677e]
+  - @batkit/errors@0.1.2
+
 ## 0.1.2
 
 ### Patch Changes

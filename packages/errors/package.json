@@ -1,6 +1,6 @@
 {
   "name": "@batkit/errors",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Standardized error classes with structured troubleshooting information for Node.js and browser",
   "keywords": [
     "error",
