@@ -164,11 +164,7 @@ export interface ErrorHandlerOptions {
 export function errorHandler(
   options: ErrorHandlerOptions = {},
 ): (error: Error, req: Request, res: Response, next: NextFunction) => void {
-  const {
-    formatters = [new DefaultErrorFormatter()],
-    logErrors = true,
-    onError,
-  } = options;
+  const { formatters = [new DefaultErrorFormatter()], logErrors = true, onError } = options;
 
   return (error: Error, req: Request, res: Response, next: NextFunction): void => {
     // If headers already sent, delegate to default Express error handler
