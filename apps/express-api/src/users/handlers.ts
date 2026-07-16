@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NotFoundError, ValidationError } from "@batkit/errors";
 import type { Request } from "express";
 import { CreateUserSchema, UpdateUserSchema } from "./contract";
@@ -95,7 +96,7 @@ export const userHandlers = {
     }
 
     // Create user
-    const id = String(users.size + 1);
+    const id = randomUUID();
     const user: User = {
       id,
       ...userData,
