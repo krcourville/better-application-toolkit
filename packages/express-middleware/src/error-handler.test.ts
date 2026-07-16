@@ -1,5 +1,6 @@
 import { LoggerFacade } from "@batkit/logger";
 import type { Logger, LoggerProvider, LogLevel, LogValue } from "@batkit/logger";
+import { fromPartial } from "@total-typescript/shoehorn";
 import type { Request, Response } from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { DefaultErrorFormatter } from "./error-handler.js";
@@ -53,18 +54,18 @@ describe("errorHandler logging", () => {
 
   it("logs request query under `query`, not `querd`/`consoley`", async () => {
     const handler = errorHandler();
-    const req = {
+    const req = fromPartial<Request>({
       path: "/widgets",
       method: "GET",
       query: { id: "42" },
       body: {},
-    } as unknown as Request;
-    const res = {
+    });
+    const res = fromPartial<Response>({
       headersSent: false,
       status: () => res,
       set: () => res,
       json: () => res,
-    } as unknown as Response;
+    });
 
     handler(new Error("boom"), req, res, () => {});
 
@@ -79,19 +80,19 @@ describe("errorHandler logging", () => {
 
   it("omits raw body and logs content-type+length when body is binary", async () => {
     const handler = errorHandler();
-    const req = {
+    const req = fromPartial<Request>({
       path: "/upload",
       method: "POST",
       query: {},
       body: Buffer.from([0xff, 0xd8, 0xff]),
       headers: { "content-type": "image/jpeg" },
-    } as unknown as Request;
-    const res = {
+    });
+    const res = fromPartial<Response>({
       headersSent: false,
       status: () => res,
       set: () => res,
       json: () => res,
-    } as unknown as Response;
+    });
 
     handler(new Error("boom"), req, res, () => {});
 
@@ -104,19 +105,19 @@ describe("errorHandler logging", () => {
 
   it("omits raw body and logs content-type+length when body is non-Buffer but content-type is non-JSON", async () => {
     const handler = errorHandler();
-    const req = {
+    const req = fromPartial<Request>({
       path: "/upload",
       method: "POST",
       query: {},
       body: "raw plain text body",
       headers: { "content-type": "text/plain" },
-    } as unknown as Request;
-    const res = {
+    });
+    const res = fromPartial<Response>({
       headersSent: false,
       status: () => res,
       set: () => res,
       json: () => res,
-    } as unknown as Response;
+    });
 
     handler(new Error("boom"), req, res, () => {});
 
@@ -129,19 +130,19 @@ describe("errorHandler logging", () => {
 
   it("still logs body when not binary", async () => {
     const handler = errorHandler();
-    const req = {
+    const req = fromPartial<Request>({
       path: "/widgets",
       method: "POST",
       query: {},
       body: { name: "widget" },
       headers: { "content-type": "application/json" },
-    } as unknown as Request;
-    const res = {
+    });
+    const res = fromPartial<Response>({
       headersSent: false,
       status: () => res,
       set: () => res,
       json: () => res,
-    } as unknown as Response;
+    });
 
     handler(new Error("boom"), req, res, () => {});
 
