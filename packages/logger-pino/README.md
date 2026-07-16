@@ -16,7 +16,7 @@ npm install --save-dev pino-pretty
 
 ## Overview
 
-A high-performance logger implementation using [Pino](https://getpino.io/), one of the fastest Node.js loggers available. Implements the `@batkit/logger` interface for seamless integration with the Better Application Toolkit.
+A high-performance `LoggerProvider` implementation using [Pino](https://getpino.io/), one of the fastest Node.js loggers available. Implements the `@batkit/logger` `LoggerProvider` interface for seamless integration with the Better Application Toolkit.
 
 ## Features
 
@@ -24,9 +24,8 @@ A high-performance logger implementation using [Pino](https://getpino.io/), one 
 - ✅ Works in Node.js and browsers (Pino has browser support)
 - ✅ Structured JSON logging
 - ✅ Low overhead
-- ✅ Child loggers with context
-- ✅ Sensitive data redaction
-- ✅ Pretty printing for development
+- ✅ Named child loggers via `getLogger(name)`
+- ✅ Full Pino config (redaction, transports, pretty printing) passed straight through
 - ✅ TypeScript-first
 
 ## Usage
@@ -34,161 +33,103 @@ A high-performance logger implementation using [Pino](https://getpino.io/), one 
 ### Basic Usage
 
 ```typescript
-import { createPinoLogger } from "@batkit/logger-pino";
-import { LogLevel } from "@batkit/logger";
+import { LoggerFacade } from "@batkit/logger";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
 
-const logger = createPinoLogger({ level: LogLevel.INFO });
+LoggerFacade.setProvider(new PinoLoggerProvider({ level: "info" }));
+
+const logger = LoggerFacade.getLogger("my-app");
 
 logger.info("Application started");
 logger.warn("Low disk space", { available: "10GB" });
-logger.error("Database connection failed", new Error("Connection timeout"));
+logger.error(new Error("Connection timeout"), "Database connection failed");
 ```
 
 ### Development Mode (Pretty Output)
 
-```typescript
-import { createDevLogger } from "@batkit/logger-pino";
-
-const logger = createDevLogger({ app: "my-api" });
-
-logger.info("Server started on port 3000");
-// Output (colorized):
-// [14:23:45 EST] INFO: Server started on port 3000
-//     app: "my-api"
-```
-
-### Production Mode (JSON + Redaction)
+`PinoLoggerProvider`'s constructor takes Pino's own [`LoggerOptions`](https://getpino.io/#/docs/api?id=options) directly — configure `transport` for `pino-pretty` the same way you would with plain Pino:
 
 ```typescript
-import { createProdLogger } from "@batkit/logger-pino";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
 
-const logger = createProdLogger({ service: "auth-api" });
-
-logger.info("User logged in", {
-  userId: "123",
-  password: "secret123", // Will be redacted
-  email: "user@example.com",
-});
-// Output: {"level":"info","service":"auth-api","userId":"123","password":"[Redacted]","email":"user@example.com"}
-```
-
-### Custom Configuration
-
-```typescript
-import { createPinoLogger } from "@batkit/logger-pino";
-import { LogLevel } from "@batkit/logger";
-
-const logger = createPinoLogger({
-  level: LogLevel.DEBUG,
-  context: { app: "my-service", version: "1.0.0" },
+const provider = new PinoLoggerProvider({
+  level: "debug",
   transport: {
     target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "yyyy-mm-dd HH:MM:ss",
-      ignore: "pid,hostname",
-    },
+    options: { colorize: true, ignore: "pid,hostname" },
   },
-  redact: ["password", "apiKey", "token", "ssn"],
 });
 ```
 
-### Using the Factory
+### Redacting Sensitive Data
 
 ```typescript
-import { PinoLoggerFactory } from "@batkit/logger-pino";
-import { LogLevel } from "@batkit/logger";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
 
-const factory = new PinoLoggerFactory({
-  level: LogLevel.INFO,
-  context: { service: "api" },
+const provider = new PinoLoggerProvider({
+  level: "info",
+  redact: {
+    paths: ["password", "req.headers.authorization"],
+    censor: "[REDACTED]",
+  },
 });
 
-const authLogger = factory.createLogger({ module: "auth" });
-const userLogger = factory.createLogger({ module: "users" });
-
-authLogger.info("Login attempt"); // Includes: service='api', module='auth'
-userLogger.info("User created"); // Includes: service='api', module='users'
+provider.getLogger("api").info("User data", {
+  username: "john",
+  password: "secret", // shows as '[REDACTED]'
+});
 ```
 
-### Child Loggers
+### Named (Child) Loggers
 
 ```typescript
-import { createPinoLogger } from "@batkit/logger-pino";
+import { PinoLoggerProvider } from "@batkit/logger-pino";
 
-const logger = createPinoLogger({ context: { app: "api" } });
+const provider = new PinoLoggerProvider({ level: "info" });
 
-//Create request-scoped logger
-function handleRequest(requestId: string) {
-  const reqLogger = logger.child({ requestId });
+const authLogger = provider.getLogger("auth");
+const usersLogger = provider.getLogger("users");
 
-  reqLogger.info("Processing request");
-  reqLogger.info("Request complete");
-  // All logs include requestId
-}
+authLogger.info("Login attempt"); // pino child logger name: "auth"
+usersLogger.info("User created"); // pino child logger name: "users"
+```
+
+### Wrapping a Pino Instance Directly
+
+`adaptPinoToBatkitLogger` wraps an existing Pino `Logger`/child logger into the `@batkit/logger` `Logger` interface, if you're managing the Pino instance yourself instead of going through `PinoLoggerProvider`:
+
+```typescript
+import { adaptPinoToBatkitLogger } from "@batkit/logger-pino";
+import { pino } from "pino";
+
+const pinoRoot = pino({ level: "info" });
+const logger = adaptPinoToBatkitLogger(pinoRoot.child({ name: "worker" }));
+
+logger.info("Processing job", { jobId: "42" });
 ```
 
 ## API Reference
 
-### Functions
-
-#### `createPinoLogger(options?): Logger`
-
-Creates a Pino logger instance.
-
-**Parameters:**
-
-- `options?: PinoLoggerOptions`
-
-**Returns:** `Logger` instance
-
-#### `createDevLogger(context?): Logger`
-
-Creates a Pino logger configured for development (pretty printing, debug level).
-
-**Parameters:**
-
-- `context?: LoggerContext`
-
-**Returns:** `Logger` instance
-
-#### `createProdLogger(context?): Logger`
-
-Creates a Pino logger configured for production (JSON output, info level, redaction).
-
-**Parameters:**
-
-- `context?: LoggerContext`
-
-**Returns:** `Logger` instance
-
-### Types
-
-#### `PinoLoggerOptions`
-
-```typescript
-interface PinoLoggerOptions {
-  level?: LogLevel | string;
-  context?: LoggerContext;
-  transport?: PinoOptions["transport"];
-  redact?: string[]; // Paths to redact
-  pinoOptions?: Omit<PinoOptions, "level" | "transport">;
-}
-```
-
 ### Classes
 
-#### `PinoLoggerAdapter`
+#### `PinoLoggerProvider`
 
-Adapter that implements the `Logger` interface using Pino.
-
-#### `PinoLoggerFactory`
-
-Factory for creating Pino logger instances with shared configuration.
+Implements `@batkit/logger`'s `LoggerProvider` interface on top of Pino.
 
 ```typescript
-new PinoLoggerFactory(options?: PinoLoggerOptions)
+new PinoLoggerProvider(config?: LoggerOptions) // LoggerOptions from "pino"
 ```
+
+**Methods:**
+
+- `getLogger(name: string): Logger` — returns a `@batkit/logger` `Logger` backed by `pino().child({ name })`
+- `isLogLevelEnabled(level: LogLevel): boolean` — checks `"DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL"` against the root Pino logger
+
+### Functions
+
+#### `adaptPinoToBatkitLogger(pinoChild: PinoLogger): Logger`
+
+Wraps a Pino `Logger` (or child logger) instance into the `@batkit/logger` `Logger` interface. `PinoLoggerProvider.getLogger` uses this internally.
 
 ## Integration with Express
 
@@ -217,25 +158,6 @@ app.get("/users", (req, res) => {
 });
 ```
 
-## Redacting Sensitive Data
-
-Pino supports automatic redaction of sensitive fields:
-
-```typescript
-const logger = createPinoLogger({
-  redact: {
-    paths: ["password", "creditCard", "ssn", "req.headers.authorization"],
-    censor: "[REDACTED]",
-  },
-});
-
-logger.info("User data", {
-  username: "john",
-  password: "secret", // Will show as '[REDACTED]'
-  email: "john@example.com",
-});
-```
-
 ## Performance
 
 Pino is one of the fastest loggers for Node.js:
@@ -251,11 +173,11 @@ Pino includes browser support out of the box. The same API works in both Node.js
 
 ## Best Practices
 
-1. **Use `createDevLogger()` in development** for readable output
-2. **Use `createProdLogger()` in production** for structured JSON logs
-3. **Redact sensitive data** using the `redact` option
-4. **Use child loggers** to add request/context-specific data
-5. **Avoid string interpolation** - use structured logging instead
+1. **Pass `transport: { target: "pino-pretty", ... }`** in development for readable output
+2. **Leave `transport` unset in production** for structured JSON logs
+3. **Redact sensitive data** using Pino's `redact` option
+4. **Use `getLogger(name)`** to scope logs per module/component
+5. **Avoid string interpolation** — use structured logging instead
 
 ## Learn More
 

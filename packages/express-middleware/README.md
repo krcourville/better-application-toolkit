@@ -197,17 +197,6 @@ Wraps async route handlers to catch errors.
 
 ### Types
 
-#### `RequestContext`
-
-```typescript
-interface RequestContext {
-  requestId: string;
-  logger: Logger;
-  userId?: string;
-  metadata: Record<string, unknown>;
-}
-```
-
 #### `ErrorFormatter`
 
 ```typescript

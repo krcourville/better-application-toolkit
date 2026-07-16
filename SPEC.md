@@ -54,6 +54,7 @@ V20: all validation-error response paths ! same status — thrown `ValidationErr
 V21: any error-formatting middleware wrapping ts-rest routes (e.g. `res.json` patch) ! register BEFORE `createExpressEndpoints()` — ts-rest handlers respond direct via `res.json()` w/out calling `next()`, middleware added after registration never fires for matched routes
 V22: v1.0.0 ! signal public API stability commitment — breaking change post-1.0 ! major bump (semver)
 V23: all 5 pkgs ! release 1.0.0 together in 1 changeset (synced versioning, ⊥ mixed 0.x/1.x across workspace)
+V24: each pkg README code sample ! reference only symbols present in that pkg's `src/index.ts` exports — check README against exports whenever a breaking-change changeset touches public API
 
 ## §T TASKS
 
@@ -91,7 +92,7 @@ T28|x|`apps/express-api` users/handlers: replace `users.size+1` id gen w/ monoto
 T29|x|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-literal backticks in delay log line|B20
 T30|x|API surface freeze review: audit each pkg `src/index.ts` exports (errors:22, rfc9457:11, logger:4, logger-pino:2, express-middleware:2) for rename/remove before 1.0 lock-in. all 5 surfaces clean, consistent naming, minimal — no changes needed|V22
 T31|x|README.md: line ~115 still said "Deploy a beta release" — kept as historical done item, added new TODO line "Publish 1.0.0 stable release"|V22
-T32|.|verify each pkg README + CHANGELOG.md reflect current API, no stale pre-1.0 examples|V22
+T32|x|verify each pkg README + CHANGELOG.md reflect current API, no stale pre-1.0 examples. found+fixed B21: logger-pino README fabricated API, errors README stale AppError ctor + wrong toJSON claim + typo, express-middleware README unexported RequestContext type|V22,B21
 T33|.|`pnpm changeset`: major bump all 5 pkgs → 1.0.0 in single changeset (synced version)|V23
 T34|.|dry-run verify (`npm publish --dry-run` per pkg) before merge, reconfirm V7 holds at 1.0|V7,T33
 T35|.|merge → release workflow publishes 1.0.0 all 5 pkgs, verify via `npm view @batkit/<pkg> version`|T33,T34
@@ -119,3 +120,4 @@ B17|2026-07-16|`apps/express-api/src/app.ts` RFC9457 interceptor middleware (`re
 B18|2026-07-16|`apps/express-api` demo/fulfillment-pipeline.ts `#reserveLine` per-item stock deduction, no rollback on partial-order failure. item 2/3 fails after item 1 deducted ∴ inventory permanently corrupted (demo-only, no invariant)|T27
 B19|2026-07-16|`apps/express-api` users/handlers.ts:98 `id = String(users.size+1)`. delete+create ∴ id collision w/ existing user (demo-only, no invariant)|T28
 B20|2026-07-16|`apps/express-api` src/lib/async-utils.ts:5 missing template-literal backticks, logs literal `"Delaying for ${ms}ms"` not interpolated ms value (`cli-app` sibling copy correct, `express-api` copy has typo)|T29
+B21|2026-07-16|`packages/logger-pino/README.md` documented fictional API (`createPinoLogger`/`createDevLogger`/`createProdLogger`/`PinoLoggerFactory`/`PinoLoggerAdapter`) — none exist in `src/index.ts`, real exports are `PinoLoggerProvider`+`adaptPinoToBatkitLogger`. also `errors/README.md` showed pre-0.1.3 `AppError(status, msg, code?, details?, isOperational?)` ctor (actual: options object per 0.1.3 changeset) & wrong "stack in non-production" `toJSON()` claim; `express-middleware/README.md` documented unexported `RequestContext` type. root cause: READMEs hand-written once, never re-synced after breaking API changes (0.1.1-0.1.3 changesets)|T32,V22

@@ -79,9 +79,9 @@ console.log(problemDetails);
 import { AppError, ConflictError } from "@batkit/errors";
 
 // Using the base class
-throw new AppError(418, "I'm a teapot", "TEAPOT_ERROR", {
-  teapotId: "42",
-  reason: "short and stout",
+throw new AppError(418, "I'm a teapot", {
+  code: "TEAPOT_ERROR",
+  details: { teapotId: "42", reason: "short and stout" },
 });
 
 // Using specific error with details
@@ -152,9 +152,7 @@ Base class for all application errors.
 new AppError(
   statusCode: number,
   message: string,
-  code?: string,
-  details?: Record<string, unknown>,
-  isOperational?: boolean
+  options?: { code?: string; details?: Record<string, unknown>; isOperational?: boolean }
 )
 ```
 
@@ -170,7 +168,7 @@ new AppError(
 **Methods:**
 
 - `toRFC9457()` - Convert to RFC 9457 Problem Details
-- `toJSON()` - JSON representation (includes stack in non-production)
+- `toJSON()` - JSON representation (always includes `stack`)
 
 ### Type Guards
 
@@ -192,7 +190,7 @@ Check if error is a NotFoundError.
 
 #### `isUnauthorizedError(error: unknown): error is UnauthorizedError`
 
-Check if error is an Un authorizedError.
+Check if error is an UnauthorizedError.
 
 #### `isForbiddenError(error: unknown): error is ForbiddenError`
 
