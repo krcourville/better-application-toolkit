@@ -66,7 +66,7 @@ T12|x|fix or allowlist T11 findings (dead exports/deps) until `pnpm knip` exits 
 T13|x|add `knip` script to root `package.json` (`pnpm knip`), wire as CI step in `ci.yml` after typecheck|V9,T12
 T14|x|confirm local `pnpm knip` reproduces CI result exactly (same config/cmd)|V10,T13
 T15|x|eval publint+attw: add as root devDeps, run once per pkg against dist/, review findings across 5 pkgs. results: publint 0 errors all 5 (suggestions only: repo.url format, missing `sideEffects`). attw 0 problems on 4/5; `@batkit/logger` `/console`+`/async-local` subpaths fail node10 resolution (expected, exports-map subpaths predate node10 exports support; main entry green all targets)|I.cmd
-T16|.|fix or allowlist T15 findings until both exit 0 across all 5 pkgs|T15
+T16|x|fix or allowlist T15 findings until both exit 0 across all 5 pkgs. fix: repository.url → `git+` prefix, add `"sideEffects": false` (all 5, verified no module-level side effects) fixes publint suggestions; attw node10 NoResolution on logger subpaths allowlisted via `--profile node16` (pkg requires node>=22, node10 profile irrelevant) not per-rule ignore, since only node10 fails|T15
 T17|.|add `publint`/`attw` scripts to root package.json, wire as CI steps after build|V12,V13,T16
 T18|.|confirm local repro matches CI exactly (recall V11: use direct bins, ⊥ `npx`)|V14,T17
 

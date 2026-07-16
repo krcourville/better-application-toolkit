@@ -17,7 +17,7 @@
   "author": "Ken Courville",
   "repository": {
     "type": "git",
-    "url": "https://github.com/krcourville/better-application-toolkit.git",
+    "url": "git+https://github.com/krcourville/better-application-toolkit.git",
     "directory": "packages/logger-pino"
   },
   "files": [
@@ -25,6 +25,7 @@
     "README.md",
     "LICENSE"
   ],
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
