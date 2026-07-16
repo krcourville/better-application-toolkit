@@ -58,7 +58,7 @@ Better Application Toolkit (BAT) is a suite of TypeScript packages designed to i
 - 🧪 **Well Tested** - Comprehensive test coverage with Vitest
 - 📚 **Standards-Based** - Implements RFC 9457 for standardized error responses
 - 🔍 **Observable** - Built-in structured logging and request context tracking
-- ⚡ **Modern** - Leverages AsyncLocalStorage and other modern Node.js features
+- ⚡ **Modern** - `@batkit/logger`'s optional `/async-local` entry uses AsyncLocalStorage for request-scoped context (Node.js only)
 
 ## Quick Start
 
