@@ -10,6 +10,8 @@ export default defineConfig({
   lint: {
     rules: {
       "no-template-curly-in-string": "error",
+      eqeqeq: "error",
+      "typescript/no-misused-promises": "error",
     },
   },
 });
