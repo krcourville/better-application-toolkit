@@ -17,6 +17,8 @@ repo ready for AI-agent dev & publish `@batkit/*` pkgs to npm public registry.
 ## §I INTERFACES
 
 - cmd: `pnpm knip` → runs knip (unused files/deps/exports check) across workspace, uses root `knip.json`/`knip.jsonc`
+- cmd: `pnpm publint` → validates package.json/exports map per publishable pkg (npm publish correctness)
+- cmd: `pnpm attw` → @arethetypeswrong/cli, checks dual ESM/CJS type resolution per publishable pkg
 - cmd: `pnpm build` → `vp run -r --cache build` (builds all pkgs)
 - cmd: `pnpm test` → `vp run -r --cache test`
 - cmd: `pnpm release` → build + `changeset publish`
@@ -40,6 +42,9 @@ V8: release workflow ! only run if CI succeeded on same commit (∵ push-trigger
 V9: CI ! fail on any knip finding (unused files/deps/exports) not in `knip.json` ignore list
 V10: `pnpm knip` locally ! reproduce exact CI knip result (same config, same command, no CI-only flags)
 V11: root knip cmd ! invoke via `npx` (repo's `npx` = vite-plus per-workspace wrapper @ `~/.vite-plus/bin/npx`, silently fans out per pkg & ignores root `knip.json`) ∴ use `knip` bin direct (pnpm script / `node_modules/.bin`)
+V12: CI ! fail on any publint error across 5 publishable pkgs (warnings ? allowlist per pkg)
+V13: CI ! fail on any attw resolution problem across 5 publishable pkgs (unless allowlisted)
+V14: publint/attw ! run against built `dist/` ∴ CI step order after build (⊥ before)
 
 ## §T TASKS
 
@@ -53,13 +58,17 @@ T6|~|`npm login` done (user: krcourville). B3: pkgs don't exist yet ∴ can't pr
 T7|x|dry-run publish check all 5 pkgs (`npm publish --dry-run`) → confirm files/exports correct|V7
 T8|x|no changeset needed: none of 5 pkgs ever published to npm, so `changeset publish` ships current 0.1.0 as-is. confirmed via `npx changeset publish --dry-run` (flag doesn't exist; verified per-pkg w/ `npm publish --dry-run` instead, see B2)|B2
 T9a|x|user: manual first `npm publish` per pkg (dep order: rfc9457 → errors,logger → logger-pino,express-middleware), local 2FA, creates pkgs on npm. required creating `batkit` npm org first (scope didn't exist, B4)|T6,T8
-T9b|.|user: configure Trusted Publisher on each pkg's npm settings → GH repo `krcourville/better-application-toolkit`, workflow `release.yml`, action `npm publish`|T9a,V5
+T9b|x|user: configure Trusted Publisher on each pkg's npm settings → GH repo `krcourville/better-application-toolkit`, workflow `release.yml`, action `npm publish`|T9a,V5
 T9c|x|pushed to main, CI green (build→check→typecheck→test all pass) & release workflow green (no-op, no pending changeset). OIDC wiring untested end-to-end until next real changeset-driven publish|T5,T9b
 T10|x|update README TODO: check off "Establish CI pipeline" & "Deploy a beta release to npmjs.com"|T4,T9a
 T11|x|eval knip: add as root devDep, add `knip.json`/`knip.jsonc` w/ workspace entry points (pnpm `workspaces` already set), run once & review findings across 5 pkgs+2 apps|I.cmd
 T12|x|fix or allowlist T11 findings (dead exports/deps) until `pnpm knip` exits 0|T11
 T13|x|add `knip` script to root `package.json` (`pnpm knip`), wire as CI step in `ci.yml` after typecheck|V9,T12
 T14|x|confirm local `pnpm knip` reproduces CI result exactly (same config/cmd)|V10,T13
+T15|.|eval publint+attw: add as root devDeps, run once per pkg against dist/, review findings across 5 pkgs|I.cmd
+T16|.|fix or allowlist T15 findings until both exit 0 across all 5 pkgs|T15
+T17|.|add `publint`/`attw` scripts to root package.json, wire as CI steps after build|V12,V13,T16
+T18|.|confirm local repro matches CI exactly (recall V11: use direct bins, ⊥ `npx`)|V14,T17
 
 ## §B BUGS
 
