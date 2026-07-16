@@ -141,7 +141,6 @@ class CustomErrorFormatter implements ErrorFormatter {
 app.use(
   errorHandler({
     formatters: [new CustomErrorFormatter()],
-    includeStack: true, // Include stack traces
     logErrors: true,
   }),
 );
@@ -179,7 +178,6 @@ Creates error handling middleware that converts errors to RFC 9457 format.
 ```typescript
 interface ErrorHandlerOptions {
   formatters?: ErrorFormatter[]; // Custom error formatters
-  includeStack?: boolean; // Include stack traces (default: only in dev)
   logErrors?: boolean; // Whether to log errors (default: true)
   onError?: (error: unknown, req: Request) => void; // Custom error logger
 }
@@ -310,11 +308,7 @@ app.post(
 );
 
 // Error handler (MUST be last)
-app.use(
-  errorHandler({
-    includeStack: true,
-  }),
-);
+app.use(errorHandler());
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

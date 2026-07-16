@@ -129,11 +129,6 @@ export interface ErrorHandlerOptions {
   formatters?: ErrorFormatter[];
 
   /**
-   * Whether to include stack traces in responses (default: only in non-production)
-   */
-  includeStack?: boolean;
-
-  /**
    * Whether to log errors (default: true)
    */
   logErrors?: boolean;
@@ -171,7 +166,6 @@ export function errorHandler(
 ): (error: Error, req: Request, res: Response, next: NextFunction) => void {
   const {
     formatters = [new DefaultErrorFormatter()],
-    includeStack = true,
     logErrors = true,
     onError,
   } = options;
@@ -225,8 +219,8 @@ export function errorHandler(
       });
     }
 
-    // Add stack trace if enabled
-    if (includeStack && error.stack) {
+    // Add stack trace
+    if (error.stack) {
       problemDetails.stack = error.stack.split("\n").map((line) => line.trim());
     }
 
