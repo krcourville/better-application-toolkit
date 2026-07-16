@@ -21,7 +21,7 @@ jobs:
           cache: true
 
       - run: vp install
+      - run: vp run -r --cache build
       - run: vp check
       - run: vp run -r --cache typecheck
       - run: vp run -r --cache test
-      - run: vp run -r --cache build
