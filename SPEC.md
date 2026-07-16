@@ -46,6 +46,7 @@ V12: CI ! fail on any publint error across 5 publishable pkgs (warnings ? allowl
 V13: CI ! fail on any attw resolution problem across 5 publishable pkgs (unless allowlisted)
 V14: publint/attw ! run against built `dist/` ∴ CI step order after build (⊥ before)
 V15: ci.yml ! invoke workspace-tool scripts (publint/attw/knip) via `vp run <script>` (⊥ bare `pnpm <script>`) ∵ `setup-vp` action puts `vp` on PATH but ⊥ bare `pnpm` binary; raw `pnpm` steps fail `command not found`
+V16: pnpm-lock.yaml ! git-ignored ∴ commit @ repo root. deterministic installs, CI cache works, closes B5 gap
 
 ## §T TASKS
 
@@ -71,6 +72,7 @@ T16|x|fix or allowlist T15 findings until both exit 0 across all 5 pkgs. fix: re
 T17|x|add `publint`/`attw` scripts to root package.json, wire as CI steps after build|V12,V13,T16
 T18|x|confirm local repro matches CI exactly (recall V11: use direct bins, ⊥ `npx`). ran exact ci.yml step order locally (build→publint→attw→check→typecheck→knip→test), all exit 0, identical to CI job. scripts use `./node_modules/.bin/` direct, no `npx`|V14,T17
 T19|x|end-to-end real PR test: fix log-field typo bug in `express-middleware/src/error-handler.ts:203-204` (`querd: req.method` dup key, `consoley: req.query` typo → both should be `query: req.query`, drop dup). branch → fix → `pnpm changeset` → PR → CI green → merge → release workflow publishes patch to npm. full cycle confirmed: PR #1 merged, `@batkit/express-middleware` 0.1.0→0.1.1 published, verified via `npm view`. surfaced B10, B11 along the way|B9,B10,B11
+T20|.|un-ignore `pnpm-lock.yaml` in `.gitignore`, `pnpm install` generate lockfile, commit to repo root|V16,B12
 
 ## §B BUGS
 
@@ -86,3 +88,4 @@ B8|2026-07-16|`npx knip` ran per-workspace via repo's vite-plus `npx` wrapper (`
 B9|2026-07-16|express-middleware error-handler logs error context w/ typo'd keys: `querd: req.method` (dup of `method`, wrong name) & `consoley: req.query` (typo, should be `query`). `req.query` never logged under correct key ∴ structured logs missing query params on unhandled errors. fix: T19|T19
 B10|2026-07-16|CI broken on `main` since T17 (3 consecutive pushes failed, incl. unrelated PR): `ci.yml` steps `pnpm publint`/`pnpm attw`/`pnpm knip` fail `command not found`. `setup-vp` action exposes `vp` on PATH, ⊥ bare `pnpm` binary ∴ any raw `pnpm <script>` CI step fails, only `vp run <script>`/`vp <cmd>` steps work. fix: ci.yml steps → `vp run publint`/`vp run attw`/`vp run knip`|V15
 B11|2026-07-16|first real changeset-driven release (T19's PR, 2 pending changesets) failed: `changesets/action` tried open "Version Packages" review PR, got `HttpError: GitHub Actions is not permitted to create or approve pull requests`. earlier release runs looked green but were no-op (0 pending changesets, nothing to gate). fix: dropped changesets/action's PR-gate flow entirely; release.yml now runs `changeset version` → commit+push direct to `main` → `changeset publish` in 1 job, since `main` has no branch protection requiring PR review|V4
+B12|2026-07-16|`.gitignore` ignored `pnpm-lock.yaml` (line 6) ∴ no lockfile committed. root cause behind B5 (esbuild version race, no pin) & separately: CI `setup-vp` cache step keys off lockfile hash, none present ⇒ cache never restores/saves, full cold install every run (observed warning "No lock file found in project directory"). fix: un-ignore, `pnpm install` generate, commit|V16
