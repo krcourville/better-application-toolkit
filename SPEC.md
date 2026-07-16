@@ -35,6 +35,7 @@ V4: release workflow ! publish only pkgs w/ pending changeset (via changesets/ac
 V5: npm publish auth via OIDC Trusted Publisher ! (⊥ NPM_TOKEN secret, per npm's automation guidance ∵ pkgs never existed pre-B2)
 V6: root `CLAUDE.md` ! exist & describe: workspace layout, `vp` commands, changeset flow, pkg boundaries
 V7: first real npm publish ! be dry-run verified (`changeset publish --dry-run` or `npm publish --dry-run`) before live
+V8: release workflow ! only run if CI succeeded on same commit (∵ push-triggered CI & release were independent, ⊥ ordering guaranteed)
 
 ## §T TASKS
 
@@ -61,3 +62,4 @@ B3|2026-07-16|spec assumed npm Trusted Publisher (OIDC) could be set up before f
 B4|2026-07-16|first `npm publish` failed `E404 Scope not found` ∴ `@batkit` scope must exist as npm org before any pkg in it publishes. fix: create org at npmjs.com/org/create named `batkit`, then publish|T9a
 B5|2026-07-16|CI `vp install` fails nondeterministically: `esbuild@0.28.1` postinstall gets wrong platform binary. root cause: `tsup`(0.27.7) & `vite`/`vite-plus`(0.28.1) peer-pull 2 esbuild majors in same workspace pkg ∴ pnpm parallel postinstall races on binary symlink, worse w/ no committed lockfile. fix: `pnpm.overrides.esbuild: "0.28.1"` in root `package.json` pins single version workspace-wide|V3
 B6|2026-07-16|CI ran `typecheck`/`test` before `build`. `@batkit/*` pkgs resolve siblings via `dist/` (`exports` map) ∴ cross-pkg typecheck fails on clean checkout w/ no dist yet. local dev always built first so never caught. fix: reorder ci.yml → install, build, check, typecheck, test|V3
+B7|2026-07-16|`ci.yml` & `release.yml` both triggered on `push: branches:[main]` independently ∴ release could publish even if CI failed, no ordering guarantee. fix: release.yml now triggers on `workflow_run` of CI, gated `if: conclusion == 'success'`, checks out CI's exact commit sha|V8
