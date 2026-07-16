@@ -16,7 +16,7 @@
   "author": "Ken Courville",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git"
+    "url": "https://github.com/krcourville/better-application-toolkit.git"
   },
   "workspaces": [
     "packages/*",

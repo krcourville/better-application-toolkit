@@ -11,15 +11,15 @@
     "validation",
     "zod"
   ],
-  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/rfc9457#readme",
+  "homepage": "https://github.com/krcourville/better-application-toolkit/tree/main/packages/rfc9457#readme",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
+    "url": "https://github.com/krcourville/better-application-toolkit/issues"
   },
   "license": "MIT",
   "author": "Ken Courville",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
+    "url": "https://github.com/krcourville/better-application-toolkit.git",
     "directory": "packages/rfc9457"
   },
   "files": [
@@ -42,6 +42,9 @@
         "default": "./dist/index.cjs"
       }
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "pnpm clean && vp pack",

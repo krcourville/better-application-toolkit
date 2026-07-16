@@ -10,15 +10,15 @@
     "rfc9457",
     "typescript"
   ],
-  "homepage": "https://github.com/YOUR_USERNAME/better-application-toolkit/tree/main/packages/errors#readme",
+  "homepage": "https://github.com/krcourville/better-application-toolkit/tree/main/packages/errors#readme",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit/issues"
+    "url": "https://github.com/krcourville/better-application-toolkit/issues"
   },
   "license": "MIT",
   "author": "Ken Courville",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/better-application-toolkit.git",
+    "url": "https://github.com/krcourville/better-application-toolkit.git",
     "directory": "packages/errors"
   },
   "files": [
@@ -41,6 +41,9 @@
         "default": "./dist/index.cjs"
       }
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "pnpm clean && vp pack",
