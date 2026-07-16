@@ -6,10 +6,10 @@ import { adaptPinoToBatkitLogger } from "./pino-batkit-adapter.js";
 /** Lowercase names pino accepts in {@link PinoLogger.isLevelEnabled}. */
 const BATKIT_TO_PINO: Record<LogLevel, "debug" | "info" | "warn" | "error" | "fatal"> = {
   DEBUG: "debug",
-  INFO: "info",
-  WARN: "warn",
   ERROR: "error",
   FATAL: "fatal",
+  INFO: "info",
+  WARN: "warn",
 };
 
 /**

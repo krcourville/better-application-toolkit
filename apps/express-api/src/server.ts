@@ -1,5 +1,9 @@
 import { LoggerFacade } from "@batkit/logger";
-import { app, PORT } from "./app.js";
+import { PORT, app } from "./app.js";
+
+const EXIT_SUCCESS = 0;
+const EXIT_FAILURE = 1;
+const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 export function startServer(): void {
   const logger = LoggerFacade.getLogger("server");
@@ -9,20 +13,20 @@ export function startServer(): void {
     logger.info(`Docs available at http://localhost:${PORT}/docs`);
   });
 
-  const shutdown = (signal: string) => {
+  function shutdown(signal: string): void {
     logger.info("Received signal, starting graceful shutdown", { signal });
 
     httpServer.close(() => {
       logger.info("Server closed, exiting process");
-      process.exit(0);
+      process.exit(EXIT_SUCCESS);
     });
 
     // Force shutdown after 10 seconds
     setTimeout(() => {
       logger.error("Forced shutdown after timeout");
-      process.exit(1);
-    }, 10000);
-  };
+      process.exit(EXIT_FAILURE);
+    }, SHUTDOWN_TIMEOUT_MS);
+  }
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));
@@ -30,11 +34,11 @@ export function startServer(): void {
   // Handle uncaught errors
   process.on("uncaughtException", (error) => {
     logger.error(error, "Uncaught exception");
-    process.exit(1);
+    process.exit(EXIT_FAILURE);
   });
 
   process.on("unhandledRejection", (reason) => {
     logger.error("Unhandled rejection", { reason: String(reason) });
-    process.exit(1);
+    process.exit(EXIT_FAILURE);
   });
 }

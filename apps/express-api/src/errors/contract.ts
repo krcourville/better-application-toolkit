@@ -1,33 +1,12 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 
-const c = initContract();
+const contract = initContract();
 
-export const errorsContract = c.router({
+export const errorsContract = contract.router({
   badRequest: {
     method: "GET",
     path: "/errors/400",
-    responses: {
-      204: z.null(),
-    },
-  },
-  unauthorized: {
-    method: "GET",
-    path: "/errors/401",
-    responses: {
-      204: z.null(),
-    },
-  },
-  forbidden: {
-    method: "GET",
-    path: "/errors/403",
-    responses: {
-      204: z.null(),
-    },
-  },
-  notFound: {
-    method: "GET",
-    path: "/errors/404",
     responses: {
       204: z.null(),
     },
@@ -39,16 +18,16 @@ export const errorsContract = c.router({
       204: z.null(),
     },
   },
-  validation: {
+  forbidden: {
     method: "GET",
-    path: "/errors/422",
+    path: "/errors/403",
     responses: {
       204: z.null(),
     },
   },
-  rateLimit: {
+  generic: {
     method: "GET",
-    path: "/errors/429",
+    path: "/errors/generic",
     responses: {
       204: z.null(),
     },
@@ -60,6 +39,20 @@ export const errorsContract = c.router({
       204: z.null(),
     },
   },
+  notFound: {
+    method: "GET",
+    path: "/errors/404",
+    responses: {
+      204: z.null(),
+    },
+  },
+  rateLimit: {
+    method: "GET",
+    path: "/errors/429",
+    responses: {
+      204: z.null(),
+    },
+  },
   serviceUnavailable: {
     method: "GET",
     path: "/errors/503",
@@ -67,9 +60,16 @@ export const errorsContract = c.router({
       204: z.null(),
     },
   },
-  generic: {
+  unauthorized: {
     method: "GET",
-    path: "/errors/generic",
+    path: "/errors/401",
+    responses: {
+      204: z.null(),
+    },
+  },
+  validation: {
+    method: "GET",
+    path: "/errors/422",
     responses: {
       204: z.null(),
     },

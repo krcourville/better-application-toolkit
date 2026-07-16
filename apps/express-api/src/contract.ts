@@ -5,13 +5,14 @@ import { demoContract } from "./demo/contract.js";
 import { errorsContract } from "./errors/contract";
 import { usersContract } from "./users/contract";
 
-const c = initContract();
+const contract = initContract();
 
 extendZodWithOpenApi(z);
 
-export const apiContract = c.router(
+export const apiContract = contract.router(
   {
     demo: demoContract,
+    errors: errorsContract,
     info: {
       method: "GET",
       path: "/",
@@ -27,7 +28,6 @@ export const apiContract = c.router(
       },
     },
     users: usersContract,
-    errors: errorsContract,
   },
   {
     pathPrefix: "/api",

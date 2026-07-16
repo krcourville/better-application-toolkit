@@ -25,55 +25,55 @@ function wrapLevel(
 ): BatkitLogger["info"] {
   const logFn = pinoChild[level].bind(pinoChild) as (objOrMsg: unknown, msg?: string) => void;
 
-  return ((a: unknown, b?: unknown, c?: unknown) => {
-    if (isPlainContext(a) && b === undefined && c === undefined) {
-      logFn(a);
+  return ((first: unknown, second?: unknown, third?: unknown) => {
+    if (isPlainContext(first) && second === undefined && third === undefined) {
+      logFn(first);
       return;
     }
 
-    if (typeof a === "string") {
-      const msg = a;
-      if (b !== undefined && isPlainContext(b)) {
-        logFn(b, msg);
+    if (typeof first === "string") {
+      const msg = first;
+      if (second !== undefined && isPlainContext(second)) {
+        logFn(second, msg);
         return;
       }
       logFn(msg);
       return;
     }
 
-    if (a instanceof Error) {
-      const err = a;
-      if (b === undefined && c === undefined) {
+    if (first instanceof Error) {
+      const err = first;
+      if (second === undefined && third === undefined) {
         logFn(err);
         return;
       }
-      if (typeof b === "string" && c === undefined) {
-        logFn(err, b);
+      if (typeof second === "string" && third === undefined) {
+        logFn(err, second);
         return;
       }
-      if (typeof b === "string" && isPlainContext(c)) {
-        logFn({ err, ...c }, b);
+      if (typeof second === "string" && isPlainContext(third)) {
+        logFn({ err, ...third }, second);
         return;
       }
-      if (isPlainContext(b) && c === undefined) {
-        logFn({ err, ...b });
+      if (isPlainContext(second) && third === undefined) {
+        logFn({ err, ...second });
         return;
       }
       logFn(err);
       return;
     }
 
-    logFn(a as never);
+    logFn(first as never);
   }) as BatkitLogger["info"];
 }
 
 export function adaptPinoToBatkitLogger(pinoChild: PinoLogger): BatkitLogger {
   return {
     debug: wrapLevel(pinoChild, "debug"),
-    info: wrapLevel(pinoChild, "info"),
-    warn: wrapLevel(pinoChild, "warn"),
     error: wrapLevel(pinoChild, "error"),
+    info: wrapLevel(pinoChild, "info"),
     mergeContext: mergeLogContext,
     runWithContext,
+    warn: wrapLevel(pinoChild, "warn"),
   };
 }

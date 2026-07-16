@@ -8,29 +8,29 @@ function isError(value: unknown): value is Error {
 }
 
 function wrapLogMethod(inner: LogMethod): LogMethod {
-  const wrapped = ((a?: unknown, b?: unknown, c?: unknown) => {
-    if (isError(a)) {
-      if (typeof b === "string") {
-        inner(a, b, overlay(c as Record<string, LogValue> | undefined));
+  const wrapped = ((first?: unknown, second?: unknown, third?: unknown) => {
+    if (isError(first)) {
+      if (typeof second === "string") {
+        inner(first, second, overlay(third as Record<string, LogValue> | undefined));
         return;
       }
-      inner(a, overlay(b as Record<string, LogValue> | undefined));
+      inner(first, overlay(second as Record<string, LogValue> | undefined));
       return;
     }
 
-    if (typeof a === "string") {
-      inner(a, overlay(b as Record<string, LogValue> | undefined));
+    if (typeof first === "string") {
+      inner(first, overlay(second as Record<string, LogValue> | undefined));
       return;
     }
 
-    if (a !== null && typeof a === "object" && !Array.isArray(a)) {
-      const base = a as Record<string, LogValue>;
+    if (first !== null && typeof first === "object" && !Array.isArray(first)) {
+      const base = first as Record<string, LogValue>;
       const merged = overlay(base);
       inner(merged ?? {});
       return;
     }
 
-    inner(a as never);
+    inner(first as never);
   }) as LogMethod;
   return wrapped;
 }
@@ -40,17 +40,21 @@ function wrapLogMethod(inner: LogMethod): LogMethod {
  * explicit call arguments (call-site keys win on conflict).
  */
 export class ContextualLoggerProvider implements LoggerProvider {
-  constructor(private readonly inner: LoggerProvider) {}
+  private readonly inner: LoggerProvider;
+
+  constructor(inner: LoggerProvider) {
+    this.inner = inner;
+  }
 
   getLogger(name: string): Logger {
     const base = this.inner.getLogger(name);
     return {
       debug: wrapLogMethod(base.debug.bind(base)),
-      info: wrapLogMethod(base.info.bind(base)),
-      warn: wrapLogMethod(base.warn.bind(base)),
       error: wrapLogMethod(base.error.bind(base)),
+      info: wrapLogMethod(base.info.bind(base)),
       mergeContext: mergeLogContext,
       runWithContext,
+      warn: wrapLogMethod(base.warn.bind(base)),
     };
   }
 

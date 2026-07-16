@@ -12,8 +12,14 @@ import { demoHandlers } from "./demo/index.js";
 import { errorHandlers } from "./errors/index.js";
 import { userHandlers } from "./users/index.js";
 
+const HttpStatus = {
+  NOT_FOUND: 404,
+  UNPROCESSABLE_ENTITY: 422,
+} as const;
+
 /** Default avoids 3000/8080/5173 and other common dev ports; override with `PORT`. */
-export const PORT = process.env.PORT || 3785;
+const DEFAULT_PORT = 3785;
+export const PORT = process.env.PORT || DEFAULT_PORT;
 
 // Create Express app
 export const app: Express = express();
@@ -42,18 +48,18 @@ app.get("/health", (_req, res) => {
 
 const openApiSpec = generateOpenApi(apiContract, {
   info: {
+    description: "Reference API built with ts-rest, express, and BAT middleware.",
     title: "Better Application Toolkit - Express API Reference",
     version: "1.0.0",
-    description: "Reference API built with ts-rest, express, and BAT middleware.",
   },
   servers: [{ url: `http://localhost:${PORT}` }],
 });
 
 // Extract endpoints from OpenAPI spec
 const endpoints: Record<string, unknown> = {
+  docs: "GET /docs",
   health: "GET /health",
   openApi: "GET /openapi.json",
-  docs: "GET /docs",
 };
 
 // Add API endpoints from the OpenAPI spec
@@ -68,27 +74,27 @@ if (openApiSpec.paths) {
 }
 
 const apiInfo = {
+  endpoints,
   message: "Better Application Toolkit - Express API Reference",
   version: "1.0.0",
-  endpoints,
 };
 
 const router = server.router(apiContract, {
   demo: demoHandlers,
+  errors: errorHandlers,
   info: async () => ({
-    status: 200,
     body: {
       data: apiInfo,
     },
+    status: 200,
   }),
   users: userHandlers,
-  errors: errorHandlers,
 });
 
 // Middleware to intercept and transform ts-rest validation errors to RFC 9457
 // Must be registered BEFORE createExpressEndpoints(): ts-rest route handlers
-// call res.json() directly without next(), so a patch applied after
-// registration never runs for matched routes (V21).
+// Call res.json() directly without next(), so a patch applied after
+// Registration never runs for matched routes (V21).
 app.use((_req, res, next) => {
   const originalJson = res.json.bind(res);
 
@@ -109,21 +115,21 @@ app.use((_req, res, next) => {
       }
 
       const validationErrors = body.issues.map((issue: ValidationIssue) => ({
+        code: issue.code,
         field: issue.path.join(".") || "root",
         message: issue.message,
-        code: issue.code,
       }));
 
       const problemDetails = createExtendedProblemDetails({
-        type: "error:validation",
-        title: "Validation Error",
-        status: 422,
         detail: "Request validation failed",
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        title: "Validation Error",
+        type: "error:validation",
         validationErrors,
       });
 
       // Send the RFC 9457 formatted response
-      res.status(422);
+      res.status(HttpStatus.UNPROCESSABLE_ENTITY);
       return originalJson.call(res, problemDetails);
     }
 
@@ -140,23 +146,26 @@ app.get("/openapi.json", (_req, res) => {
   res.json(openApiSpec);
 });
 
+// oxlint-disable-next-line no-magic-numbers -- [0] is a type-level tuple index, not a runtime value; there's no constant to extract.
+type ApiReferenceOptions = Parameters<typeof apiReference>[0];
+
 app.use(
   "/docs",
   apiReference({
     spec: {
       url: "/openapi.json",
     },
-  } as Parameters<typeof apiReference>[0]),
+  } as ApiReferenceOptions),
 );
 
 // 404 handler for unmatched routes
 app.use((req, res) => {
-  res.status(404).json({
-    type: "error:not-found",
-    title: "Route Not Found",
-    status: 404,
+  res.status(HttpStatus.NOT_FOUND).json({
     detail: `The route ${req.method} ${req.path} does not exist`,
     instance: req.path,
+    status: HttpStatus.NOT_FOUND,
+    title: "Route Not Found",
+    type: "error:not-found",
   });
 });
 

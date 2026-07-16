@@ -3,28 +3,35 @@ import { LoggerFacade } from "@batkit/logger";
 import type { Request } from "express";
 import { FulfillmentPipeline } from "./fulfillment-pipeline.js";
 
-type FulfillmentBody = {
+interface FulfillmentBody {
   orderId: string;
   items: { sku: string; qty: number }[];
-};
+}
 
-type FulfillmentHandlerArgs = {
+interface FulfillmentHandlerArgs {
   body: FulfillmentBody;
   req: Request;
-};
+}
+
+const HttpStatus = {
+  OK: 200,
+} as const;
 
 class FulfillmentController {
   private readonly logger = LoggerFacade.getLogger("fulfillment.controller");
+  private readonly pipeline: FulfillmentPipeline;
 
-  constructor(private readonly pipeline: FulfillmentPipeline) {}
+  constructor(pipeline: FulfillmentPipeline) {
+    this.pipeline = pipeline;
+  }
 
   async handle(args: FulfillmentHandlerArgs) {
     const { body, req } = args;
 
     const transactionId = req.get("x-transaction-id") ?? randomUUID();
     this.logger.mergeContext({
-      transactionId,
       orderId: body.orderId,
+      transactionId,
     });
 
     this.logger.info("Fulfillment request accepted", {
@@ -34,14 +41,14 @@ class FulfillmentController {
     const result = await this.pipeline.fulfill(body.orderId, body.items);
 
     return {
-      status: 200 as const,
       body: {
         data: {
-          transactionId,
           orderId: body.orderId,
           status: result.status,
+          transactionId,
         },
       },
+      status: HttpStatus.OK,
     };
   }
 }

@@ -25,7 +25,10 @@ export function overlay(explicit?: Record<string, LogValue>): Record<string, Log
  * If there is already a store (nested call), `initial` is merged on top so outer
  * fields (e.g. `correlationId`) remain unless inner `initial` overrides the same key.
  */
-export function runWithContext<T>(initial: Record<string, LogValue>, fn: () => T): T {
+export function runWithContext<Result>(
+  initial: Record<string, LogValue>,
+  fn: () => Result,
+): Result {
   const parent = logContextStorage.getStore();
   const store: Record<string, LogValue> = parent ? { ...parent, ...initial } : { ...initial };
   return logContextStorage.run(store, fn);
