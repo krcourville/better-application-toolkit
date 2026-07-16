@@ -21,8 +21,15 @@ export class FulfillmentPipeline {
 
     await delay(15);
 
-    for (const item of items) {
-      this.#reserveLine(item);
+    const reserved: FulfillmentItem[] = [];
+    try {
+      for (const item of items) {
+        this.#reserveLine(item);
+        reserved.push(item);
+      }
+    } catch (error) {
+      this.#rollback(reserved);
+      throw error;
     }
 
     await delay(10);
@@ -48,5 +55,16 @@ export class FulfillmentPipeline {
       sku: item.sku,
       qty: item.qty,
     });
+  }
+
+  #rollback(items: FulfillmentItem[]): void {
+    for (const item of items) {
+      const available = this.#inventory.get(item.sku) ?? 0;
+      this.#inventory.set(item.sku, available + item.qty);
+      this.logger.info("Stock reservation rolled back", {
+        sku: item.sku,
+        qty: item.qty,
+      });
+    }
   }
 }

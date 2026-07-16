@@ -84,7 +84,7 @@ T23|x|change `formatZodError` status 400→422|V19,B14
 T24|x|`errors` pkg: `ValidationError.toRFC9457()` + `AppError` super status 400→422, align thrown-class path w/ zod-driven 422 (T23)|V20,B15
 T25|x|`express-middleware` error-handler.ts: broaden binary-body guard to check content-type header too (⊥ just `Buffer.isBuffer`), match V17 wording|V17,B16
 T26|x|`apps/express-api`: reorder RFC9457 ts-rest interceptor middleware before `createExpressEndpoints()`, or refactor off `res.json` patch pattern|V21,B17
-T27|.|`apps/express-api` demo/fulfillment-pipeline: add rollback (compensating deduction) on partial-order failure|B18
+T27|x|`apps/express-api` demo/fulfillment-pipeline: add rollback (compensating deduction) on partial-order failure|B18
 T28|.|`apps/express-api` users/handlers: replace `users.size+1` id gen w/ monotonic counter or `randomUUID`|B19
 T29|.|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-literal backticks in delay log line|B20
 
