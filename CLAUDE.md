@@ -32,6 +32,7 @@ Dependency order (build/test respects this): `rfc9457` → `errors`/`logger` →
 - `pnpm dev` — express-api hot reload + workspace watchers
 - `pnpm changeset` — record versionable change (required for any pkg edit meant to ship)
 - `pnpm release` — build + `changeset publish`
+- `pnpm knip` — unused files/deps/exports check (config: `knip.json`); same command runs in CI
 
 ## Conventions
 
@@ -42,6 +43,7 @@ Dependency order (build/test respects this): `rfc9457` → `errors`/`logger` →
 - `apps/*` never gets a changeset — `.changeset/config.json` `ignore` list enforces this for `express-api`; `cli-app` has no package changes expected either.
 - Tests: Vitest, colocated per pkg (`vp test`).
 - TS project references: composite builds, `tsc --build` incremental. Go-to-def hits `.ts` source not `.d.ts`.
+- **Never run `npx <tool>` in this repo.** `npx` is shadowed by a vite-plus wrapper binary (`~/.vite-plus/bin/npx`) that silently fans a command out across every workspace instead of running it once at root — no error, exit 0, just wrong/incomplete output (e.g. `npx knip` ignores root `knip.json`). Use the pnpm script (`pnpm knip`) or the local bin directly (`./node_modules/.bin/knip`).
 
 ## SPEC.md
 
