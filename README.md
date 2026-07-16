@@ -106,15 +106,9 @@ app.use(errorHandler());
 app.listen(3000);
 ```
 
-## TODO
+## Roadmap
 
-- [x] Bootstrap project
-- [x] Bootstrap libraries and reference apps
-- [x] Add documentation of recommendations
-- [x] Establish CI pipeline
-- [x] Deploy a beta release to npmjs.com
-- [ ] Publish 1.0.0 stable release
-- [ ] Add recommendations for alarms/alerts
+See [ROADMAP.md](./ROADMAP.md).
 
 ## Contributing
 
