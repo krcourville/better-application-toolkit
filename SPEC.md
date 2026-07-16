@@ -69,6 +69,7 @@ T15|x|eval publint+attw: add as root devDeps, run once per pkg against dist/, re
 T16|x|fix or allowlist T15 findings until both exit 0 across all 5 pkgs. fix: repository.url → `git+` prefix, add `"sideEffects": false` (all 5, verified no module-level side effects) fixes publint suggestions; attw node10 NoResolution on logger subpaths allowlisted via `--profile node16` (pkg requires node>=22, node10 profile irrelevant) not per-rule ignore, since only node10 fails|T15
 T17|x|add `publint`/`attw` scripts to root package.json, wire as CI steps after build|V12,V13,T16
 T18|x|confirm local repro matches CI exactly (recall V11: use direct bins, ⊥ `npx`). ran exact ci.yml step order locally (build→publint→attw→check→typecheck→knip→test), all exit 0, identical to CI job. scripts use `./node_modules/.bin/` direct, no `npx`|V14,T17
+T19|~|end-to-end real PR test: fix log-field typo bug in `express-middleware/src/error-handler.ts:203-204` (`querd: req.method` dup key, `consoley: req.query` typo → both should be `query: req.query`, drop dup). branch → fix → `pnpm changeset` → PR → CI green → merge → release workflow publishes patch to npm|B9
 
 ## §B BUGS
 
@@ -81,3 +82,4 @@ B5|2026-07-16|CI `vp install` fails nondeterministically: `esbuild@0.28.1` posti
 B6|2026-07-16|CI ran `typecheck`/`test` before `build`. `@batkit/*` pkgs resolve siblings via `dist/` (`exports` map) ∴ cross-pkg typecheck fails on clean checkout w/ no dist yet. local dev always built first so never caught. fix: reorder ci.yml → install, build, check, typecheck, test|V3
 B7|2026-07-16|`ci.yml` & `release.yml` both triggered on `push: branches:[main]` independently ∴ release could publish even if CI failed, no ordering guarantee. fix: release.yml now triggers on `workflow_run` of CI, gated `if: conclusion == 'success'`, checks out CI's exact commit sha|V8
 B8|2026-07-16|`npx knip` ran per-workspace via repo's vite-plus `npx` wrapper (`~/.vite-plus/bin/npx`), silently fanned out across all 7 workspaces & ignored root `knip.json` entirely. no error, exit 0, plausible-but-wrong (fewer) findings than real monorepo-aware run. fix: invoke `knip` bin direct (pnpm script / `node_modules/.bin`), ⊥ via `npx`/`pnpm dlx`|V11
+B9|2026-07-16|express-middleware error-handler logs error context w/ typo'd keys: `querd: req.method` (dup of `method`, wrong name) & `consoley: req.query` (typo, should be `query`). `req.query` never logged under correct key ∴ structured logs missing query params on unhandled errors. fix: T19|T19
