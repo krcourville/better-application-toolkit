@@ -113,6 +113,7 @@ app.listen(3000);
 - [x] Add documentation of recommendations
 - [x] Establish CI pipeline
 - [x] Deploy a beta release to npmjs.com
+- [ ] Publish 1.0.0 stable release
 - [ ] Add recommendations for alarms/alerts
 
 ## Contributing
