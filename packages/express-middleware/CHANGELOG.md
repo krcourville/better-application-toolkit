@@ -1,5 +1,18 @@
 # @batkit/express-middleware
 
+## 1.0.0
+
+### Major Changes
+
+- a1567fd: 1.0.0: first stable release. Public API surface reviewed and frozen — breaking changes from this point require a major version bump.
+
+### Patch Changes
+
+- Updated dependencies [a1567fd]
+  - @batkit/rfc9457@1.0.0
+  - @batkit/errors@1.0.0
+  - @batkit/logger@1.0.0
+
 ## 0.1.5
 
 ### Patch Changes

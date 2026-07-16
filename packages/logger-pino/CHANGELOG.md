@@ -1,5 +1,16 @@
 # @batkit/logger-pino
 
+## 1.0.0
+
+### Major Changes
+
+- a1567fd: 1.0.0: first stable release. Public API surface reviewed and frozen — breaking changes from this point require a major version bump.
+
+### Patch Changes
+
+- Updated dependencies [a1567fd]
+  - @batkit/logger@1.0.0
+
 ## 0.1.2
 
 ### Patch Changes

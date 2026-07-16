@@ -1,6 +1,6 @@
 {
   "name": "@batkit/logger",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Logger facade with default console implementation for Node.js and browser",
   "keywords": [
     "console",

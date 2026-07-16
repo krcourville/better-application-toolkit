@@ -1,5 +1,16 @@
 # @batkit/errors
 
+## 1.0.0
+
+### Major Changes
+
+- a1567fd: 1.0.0: first stable release. Public API surface reviewed and frozen — breaking changes from this point require a major version bump.
+
+### Patch Changes
+
+- Updated dependencies [a1567fd]
+  - @batkit/rfc9457@1.0.0
+
 ## 0.1.3
 
 ### Patch Changes

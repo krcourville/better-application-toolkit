@@ -1,6 +1,6 @@
 {
   "name": "cli-app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Minimal terminal demo of @batkit/logger facade (no HTTP server)",
   "type": "module",
