@@ -26,13 +26,13 @@ Production-ready Express middleware for error handling with automatic RFC 9457 P
 ### Basic Setup
 
 ```typescript
-import { errorHandler } from '@batkit/express-middleware';
-import express from 'express';
+import { errorHandler } from "@batkit/express-middleware";
+import express from "express";
 
 const app = express();
 
 // Your routes
-app.get('/users/:id', (req, res) => {
+app.get("/users/:id", (req, res) => {
   // ... your logic
   res.json({ user: {} });
 });

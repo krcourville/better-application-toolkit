@@ -1,7 +1,7 @@
 # Observability recommendations
 
 This document collects practical guidance for building observable Node.js services. It complements
-the BAT packages: use it for *what* to aim for, and the package READMEs for *how* to wire things in
+the BAT packages: use it for _what_ to aim for, and the package READMEs for _how_ to wire things in
 this repo.
 
 Each `###` rule uses **PREFER** (what to lean toward) or **AVOID** (what to steer clear of), with a
@@ -11,14 +11,14 @@ stable `bat-*` id in the heading for citations.
 
 A common way to group observability work is **MELT**:
 
-- **M**etrics — How much, how fast, how often (over time). *In BAT:* not a package today;
+- **M**etrics — How much, how fast, how often (over time). _In BAT:_ not a package today;
   use your platform (Prometheus, Datadog, CloudWatch, etc.).
-- **E**vents — Discrete occurrences (business or product signals). *In BAT:* often structured
+- **E**vents — Discrete occurrences (business or product signals). _In BAT:_ often structured
   log lines or a dedicated event pipeline.
-- **L**ogs — What happened, with context, for debugging and audit. *In BAT:*
+- **L**ogs — What happened, with context, for debugging and audit. _In BAT:_
   [@batkit/logger](../packages/logger/README.md) and
   [AsyncLocalStorage](./async-local-storage.md).
-- **T**races — How a request flowed across services and where time went. *In BAT:* correlation IDs
+- **T**races — How a request flowed across services and where time went. _In BAT:_ correlation IDs
   via middleware; full tracing via OpenTelemetry (or similar).
 
 Metrics, logs, and traces should agree on **identity**: the same request or job should be joinable
@@ -230,12 +230,12 @@ cloud-native agents).
 
 ### PREFER: Use RED signals for request-serving workloads — `bat-300`
 
-Track *Rate*, *Errors*, and *Duration* per route or dependency so you can see user-visible
+Track _Rate_, _Errors_, and _Duration_ per route or dependency so you can see user-visible
 health and regressions quickly.
 
 ### PREFER: Use USE signals for resources — `bat-301`
 
-For CPUs, disks, queues, and similar resources, watch *Utilization*, *Saturation*, and *Errors* so
+For CPUs, disks, queues, and similar resources, watch _Utilization_, _Saturation_, and _Errors_ so
 capacity limits show up before they become outages.
 
 ### PREFER: Export metrics from the runtime and bound label cardinality — `bat-302`
