@@ -72,7 +72,7 @@ T16|x|fix or allowlist T15 findings until both exit 0 across all 5 pkgs. fix: re
 T17|x|add `publint`/`attw` scripts to root package.json, wire as CI steps after build|V12,V13,T16
 T18|x|confirm local repro matches CI exactly (recall V11: use direct bins, ⊥ `npx`). ran exact ci.yml step order locally (build→publint→attw→check→typecheck→knip→test), all exit 0, identical to CI job. scripts use `./node_modules/.bin/` direct, no `npx`|V14,T17
 T19|x|end-to-end real PR test: fix log-field typo bug in `express-middleware/src/error-handler.ts:203-204` (`querd: req.method` dup key, `consoley: req.query` typo → both should be `query: req.query`, drop dup). branch → fix → `pnpm changeset` → PR → CI green → merge → release workflow publishes patch to npm. full cycle confirmed: PR #1 merged, `@batkit/express-middleware` 0.1.0→0.1.1 published, verified via `npm view`. surfaced B10, B11 along the way|B9,B10,B11
-T20|.|un-ignore `pnpm-lock.yaml` in `.gitignore`, `pnpm install` generate lockfile, commit to repo root|V16,B12
+T20|x|un-ignore `pnpm-lock.yaml` in `.gitignore`, `pnpm install` generate lockfile, commit to repo root. verified: pushed, CI green, "Auto-detected lock file" replaces prior "No lock file found" warning|V16,B12
 
 ## §B BUGS
 
