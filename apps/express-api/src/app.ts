@@ -85,8 +85,10 @@ const router = server.router(apiContract, {
   errors: errorHandlers,
 });
 
-createExpressEndpoints(apiContract, router, app);
 // Middleware to intercept and transform ts-rest validation errors to RFC 9457
+// Must be registered BEFORE createExpressEndpoints(): ts-rest route handlers
+// call res.json() directly without next(), so a patch applied after
+// registration never runs for matched routes (V21).
 app.use((_req, res, next) => {
   const originalJson = res.json.bind(res);
 
@@ -115,13 +117,13 @@ app.use((_req, res, next) => {
       const problemDetails = createExtendedProblemDetails({
         type: "error:validation",
         title: "Validation Error",
-        status: 400,
+        status: 422,
         detail: "Request validation failed",
         validationErrors,
       });
 
       // Send the RFC 9457 formatted response
-      res.status(400);
+      res.status(422);
       return originalJson.call(res, problemDetails);
     }
 
@@ -131,6 +133,8 @@ app.use((_req, res, next) => {
 
   next();
 });
+
+createExpressEndpoints(apiContract, router, app);
 
 app.get("/openapi.json", (_req, res) => {
   res.json(openApiSpec);
