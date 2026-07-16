@@ -107,7 +107,7 @@ export class ValidationError extends AppError {
     message: string,
     validationErrors: Array<{ field: string; message: string; value?: unknown }>,
   ) {
-    super(400, message, "VALIDATION_ERROR", { validationErrors });
+    super(422, message, "VALIDATION_ERROR", { validationErrors });
     this.validationErrors = validationErrors;
   }
 
@@ -115,7 +115,7 @@ export class ValidationError extends AppError {
     return createExtendedProblemDetails({
       type: "error:validation",
       title: "Validation Error",
-      status: 400,
+      status: 422,
       detail: this.message,
       validationErrors: this.validationErrors,
     });

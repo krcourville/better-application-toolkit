@@ -108,7 +108,7 @@ describe("@batkit/errors", () => {
       ];
       const error = new ValidationError("Validation failed", validationErrors);
 
-      expect(error.statusCode).toBe(400);
+      expect(error.statusCode).toBe(422);
       expect(error.code).toBe("VALIDATION_ERROR");
       expect(error.validationErrors).toEqual(validationErrors);
       expect(error.details).toHaveProperty("validationErrors");
@@ -122,7 +122,7 @@ describe("@batkit/errors", () => {
       expect(rfc9457).toEqual({
         type: "error:validation",
         title: "Validation Error",
-        status: 400,
+        status: 422,
         detail: "Validation failed",
         validationErrors,
       });
@@ -393,7 +393,7 @@ describe("@batkit/errors", () => {
     describe("getStatusCode", () => {
       it("should extract status code from AppError", () => {
         expect(getStatusCode(new NotFoundError("User", "1"))).toBe(404);
-        expect(getStatusCode(new ValidationError("Bad", []))).toBe(400);
+        expect(getStatusCode(new ValidationError("Bad", []))).toBe(422);
         expect(getStatusCode(new InternalServerError())).toBe(500);
       });
 
