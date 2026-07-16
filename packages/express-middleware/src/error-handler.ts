@@ -112,7 +112,7 @@ export class DefaultErrorFormatter implements ErrorFormatter {
     return createExtendedProblemDetails({
       type: "error:validation",
       title: "Validation Error",
-      status: 400,
+      status: 422,
       detail: "Request validation failed",
       validationErrors,
     });

@@ -2,6 +2,7 @@ import { LoggerFacade } from "@batkit/logger";
 import type { Logger, LoggerProvider, LogLevel, LogValue } from "@batkit/logger";
 import type { Request, Response } from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { DefaultErrorFormatter } from "./error-handler.js";
 import type { errorHandler as ErrorHandlerFn } from "./error-handler.js";
 
 class RecordingLogger implements Logger {
@@ -124,5 +125,18 @@ describe("errorHandler logging", () => {
     expect(context.body).toEqual({ name: "widget" });
     expect(context.bodyContentType).toBeUndefined();
     expect(context.bodyLength).toBeUndefined();
+  });
+});
+
+describe("DefaultErrorFormatter", () => {
+  it("formats zod errors with 422 status, not 400", () => {
+    const formatter = new DefaultErrorFormatter();
+    const zodError = {
+      issues: [{ path: ["name"], message: "Required", code: "invalid_type" }],
+    };
+
+    const result = formatter.format(zodError);
+
+    expect(result.status).toBe(422);
   });
 });

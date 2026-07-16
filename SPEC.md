@@ -49,6 +49,7 @@ V15: ci.yml ! invoke workspace-tool scripts (publint/attw/knip) via `vp run <scr
 V16: pnpm-lock.yaml ! git-ignored ∴ commit @ repo root. deterministic installs, CI cache works, closes B5 gap
 V17: error-handler log call ! include raw `req.body` when body binary (Buffer or non-JSON content-type) — log content-type+length instead
 V18: error-handler response ! gate stack trace behind `includeStack` option — stack always included, option removed from `ErrorHandlerOptions` type (breaking change, ⊥ env-based toggle)
+V19: zod validation error format ! return 400 — use 422 (Unprocessable Entity); request syntactically valid, semantically invalid
 
 ## §T TASKS
 
@@ -77,6 +78,7 @@ T19|x|end-to-end real PR test: fix log-field typo bug in `express-middleware/src
 T20|x|un-ignore `pnpm-lock.yaml` in `.gitignore`, `pnpm install` generate lockfile, commit to repo root. verified: pushed, CI green, "Auto-detected lock file" replaces prior "No lock file found" warning|V16,B12
 T21|x|error-handler: skip raw `req.body` log on binary payload (Buffer/non-JSON content-type), log content-type+length instead|V17,B13
 T22|.|remove `includeStack` from `ErrorHandlerOptions`, hardcode stack always added to problem-details response|V18
+T23|x|change `formatZodError` status 400→422|V19,B14
 
 ## §B BUGS
 
@@ -94,3 +96,4 @@ B10|2026-07-16|CI broken on `main` since T17 (3 consecutive pushes failed, incl.
 B11|2026-07-16|first real changeset-driven release (T19's PR, 2 pending changesets) failed: `changesets/action` tried open "Version Packages" review PR, got `HttpError: GitHub Actions is not permitted to create or approve pull requests`. earlier release runs looked green but were no-op (0 pending changesets, nothing to gate). fix: dropped changesets/action's PR-gate flow entirely; release.yml now runs `changeset version` → commit+push direct to `main` → `changeset publish` in 1 job, since `main` has no branch protection requiring PR review|V4
 B12|2026-07-16|`.gitignore` ignored `pnpm-lock.yaml` (line 6) ∴ no lockfile committed. root cause behind B5 (esbuild version race, no pin) & separately: CI `setup-vp` cache step keys off lockfile hash, none present ⇒ cache never restores/saves, full cold install every run (observed warning "No lock file found in project directory"). fix: un-ignore, `pnpm install` generate, commit|V16
 B13|2026-07-16|error-handler unconditional `body: req.body` log includes binary payloads (Buffer/multipart) in structured error logs, bloats/corrupts log output|V17
+B14|2026-07-16|`formatZodError` returned 400 (Bad Request) for validation errors; wrong per RFC 9457 convention — body syntactically parseable, only semantic validation failed, should be 422 (Unprocessable Entity)|V19
