@@ -187,12 +187,25 @@ export function errorHandler(
             method: req.method,
           });
         } else {
+          const contentType = req.headers?.["content-type"];
+          const isJsonContentType =
+            typeof contentType === "string" && /^application\/(?:[^;]+\+)?json/i.test(contentType);
+          const isBinaryBody =
+            Buffer.isBuffer(req.body) || (contentType !== undefined && !isJsonContentType);
+
           logger.error(error, {
             path: req.path,
             method: req.method,
             query: req.query,
-            ...(Buffer.isBuffer(req.body)
-              ? { bodyContentType: req.headers["content-type"], bodyLength: req.body.length }
+            ...(isBinaryBody
+              ? {
+                  bodyContentType: contentType,
+                  bodyLength: Buffer.isBuffer(req.body)
+                    ? req.body.length
+                    : typeof req.body === "string"
+                      ? Buffer.byteLength(req.body)
+                      : undefined,
+                }
               : { body: req.body }),
           });
         }

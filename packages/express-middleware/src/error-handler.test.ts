@@ -102,6 +102,31 @@ describe("errorHandler logging", () => {
     expect(context.bodyLength).toBe(3);
   });
 
+  it("omits raw body and logs content-type+length when body is non-Buffer but content-type is non-JSON", async () => {
+    const handler = errorHandler();
+    const req = {
+      path: "/upload",
+      method: "POST",
+      query: {},
+      body: "raw plain text body",
+      headers: { "content-type": "text/plain" },
+    } as unknown as Request;
+    const res = {
+      headersSent: false,
+      status: () => res,
+      set: () => res,
+      json: () => res,
+    } as unknown as Response;
+
+    handler(new Error("boom"), req, res, () => {});
+
+    const [, context] = provider.logger.calls[0] as [unknown, Record<string, unknown>];
+
+    expect(context.body).toBeUndefined();
+    expect(context.bodyContentType).toBe("text/plain");
+    expect(context.bodyLength).toBe(19);
+  });
+
   it("still logs body when not binary", async () => {
     const handler = errorHandler();
     const req = {
