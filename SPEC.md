@@ -50,6 +50,8 @@ V16: pnpm-lock.yaml ! git-ignored ∴ commit @ repo root. deterministic installs
 V17: error-handler log call ! include raw `req.body` when body binary (Buffer or non-JSON content-type) — log content-type+length instead
 V18: error-handler response ! gate stack trace behind `includeStack` option — stack always included, option removed from `ErrorHandlerOptions` type (breaking change, ⊥ env-based toggle)
 V19: zod validation error format ! return 400 — use 422 (Unprocessable Entity); request syntactically valid, semantically invalid
+V20: all validation-error response paths ! same status — thrown `ValidationError` class & zod-driven `formatZodError` both ! return 422, ⊥ diverge by which code path caught the failure
+V21: any error-formatting middleware wrapping ts-rest routes (e.g. `res.json` patch) ! register BEFORE `createExpressEndpoints()` — ts-rest handlers respond direct via `res.json()` w/out calling `next()`, middleware added after registration never fires for matched routes
 
 ## §T TASKS
 
@@ -79,6 +81,12 @@ T20|x|un-ignore `pnpm-lock.yaml` in `.gitignore`, `pnpm install` generate lockfi
 T21|x|error-handler: skip raw `req.body` log on binary payload (Buffer/non-JSON content-type), log content-type+length instead|V17,B13
 T22|x|remove `includeStack` from `ErrorHandlerOptions`, hardcode stack always added to problem-details response|V18
 T23|x|change `formatZodError` status 400→422|V19,B14
+T24|x|`errors` pkg: `ValidationError.toRFC9457()` + `AppError` super status 400→422, align thrown-class path w/ zod-driven 422 (T23)|V20,B15
+T25|.|`express-middleware` error-handler.ts: broaden binary-body guard to check content-type header too (⊥ just `Buffer.isBuffer`), match V17 wording|V17,B16
+T26|.|`apps/express-api`: reorder RFC9457 ts-rest interceptor middleware before `createExpressEndpoints()`, or refactor off `res.json` patch pattern|V21,B17
+T27|.|`apps/express-api` demo/fulfillment-pipeline: add rollback (compensating deduction) on partial-order failure|B18
+T28|.|`apps/express-api` users/handlers: replace `users.size+1` id gen w/ monotonic counter or `randomUUID`|B19
+T29|.|`apps/express-api`+`cli-app` lib/async-utils.ts: fix missing template-literal backticks in delay log line|B20
 
 ## §B BUGS
 
@@ -97,3 +105,9 @@ B11|2026-07-16|first real changeset-driven release (T19's PR, 2 pending changese
 B12|2026-07-16|`.gitignore` ignored `pnpm-lock.yaml` (line 6) ∴ no lockfile committed. root cause behind B5 (esbuild version race, no pin) & separately: CI `setup-vp` cache step keys off lockfile hash, none present ⇒ cache never restores/saves, full cold install every run (observed warning "No lock file found in project directory"). fix: un-ignore, `pnpm install` generate, commit|V16
 B13|2026-07-16|error-handler unconditional `body: req.body` log includes binary payloads (Buffer/multipart) in structured error logs, bloats/corrupts log output|V17
 B14|2026-07-16|`formatZodError` returned 400 (Bad Request) for validation errors; wrong per RFC 9457 convention — body syntactically parseable, only semantic validation failed, should be 422 (Unprocessable Entity)|V19
+B15|2026-07-16|`ValidationError.toRFC9457()` (`errors/src/index.ts:114-122`) hardcode status 400. T23 fixed zod-driven path (`formatZodError`) 400→422 but `ValidationError` class thrown direct still 400 ∴ same failure class, 2 status codes depending on which path catches it|V20
+B16|2026-07-16|`error-handler.ts:198-201` binary-body guard checks `Buffer.isBuffer(req.body)` only. V17 wording ! "Buffer or non-JSON content-type" — non-Buffer non-JSON body (e.g. `text/plain`, urlencoded edge case) still logged raw under `body:` key|V17
+B17|2026-07-16|`apps/express-api/src/app.ts` RFC9457 interceptor middleware (`res.json` monkeypatch, ~line 89) registered AFTER `createExpressEndpoints(apiContract, router, app)`. ts-rest route handlers call `res.json()` direct w/out `next()` ∴ middleware never runs for matched routes, real validation failures leak raw ZodError shape instead of problem+json|V21
+B18|2026-07-16|`apps/express-api` demo/fulfillment-pipeline.ts `#reserveLine` per-item stock deduction, no rollback on partial-order failure. item 2/3 fails after item 1 deducted ∴ inventory permanently corrupted (demo-only, no invariant)|T27
+B19|2026-07-16|`apps/express-api` users/handlers.ts:98 `id = String(users.size+1)`. delete+create ∴ id collision w/ existing user (demo-only, no invariant)|T28
+B20|2026-07-16|`apps/express-api` src/lib/async-utils.ts:5 missing template-literal backticks, logs literal `"Delaying for ${ms}ms"` not interpolated ms value (`cli-app` sibling copy correct, `express-api` copy has typo)|T29
