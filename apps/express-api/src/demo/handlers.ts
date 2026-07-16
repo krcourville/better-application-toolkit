@@ -13,7 +13,7 @@ type FulfillmentHandlerArgs = {
   req: Request;
 };
 
-export class FulfillmentController {
+class FulfillmentController {
   private readonly logger = LoggerFacade.getLogger("fulfillment.controller");
 
   constructor(private readonly pipeline: FulfillmentPipeline) {}

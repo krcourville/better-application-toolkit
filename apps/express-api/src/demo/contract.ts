@@ -6,7 +6,7 @@ const c = initContract();
 
 extendZodWithOpenApi(z);
 
-export const FulfillmentItemSchema = z
+const FulfillmentItemSchema = z
   .object({
     sku: z.string().min(1).openapi({ example: "SKU-1" }),
     qty: z.number().int().positive().openapi({ example: 2 }),

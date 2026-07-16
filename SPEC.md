@@ -16,6 +16,7 @@ repo ready for AI-agent dev & publish `@batkit/*` pkgs to npm public registry.
 
 ## §I INTERFACES
 
+- cmd: `pnpm knip` → runs knip (unused files/deps/exports check) across workspace, uses root `knip.json`/`knip.jsonc`
 - cmd: `pnpm build` → `vp run -r --cache build` (builds all pkgs)
 - cmd: `pnpm test` → `vp run -r --cache test`
 - cmd: `pnpm release` → build + `changeset publish`
@@ -36,6 +37,9 @@ V5: npm publish auth via OIDC Trusted Publisher ! (⊥ NPM_TOKEN secret, per npm
 V6: root `CLAUDE.md` ! exist & describe: workspace layout, `vp` commands, changeset flow, pkg boundaries
 V7: first real npm publish ! be dry-run verified (`changeset publish --dry-run` or `npm publish --dry-run`) before live
 V8: release workflow ! only run if CI succeeded on same commit (∵ push-triggered CI & release were independent, ⊥ ordering guaranteed)
+V9: CI ! fail on any knip finding (unused files/deps/exports) not in `knip.json` ignore list
+V10: `pnpm knip` locally ! reproduce exact CI knip result (same config, same command, no CI-only flags)
+V11: root knip cmd ! invoke via `npx` (repo's `npx` = vite-plus per-workspace wrapper @ `~/.vite-plus/bin/npx`, silently fans out per pkg & ignores root `knip.json`) ∴ use `knip` bin direct (pnpm script / `node_modules/.bin`)
 
 ## §T TASKS
 
@@ -52,6 +56,10 @@ T9a|x|user: manual first `npm publish` per pkg (dep order: rfc9457 → errors,lo
 T9b|.|user: configure Trusted Publisher on each pkg's npm settings → GH repo `krcourville/better-application-toolkit`, workflow `release.yml`, action `npm publish`|T9a,V5
 T9c|x|pushed to main, CI green (build→check→typecheck→test all pass) & release workflow green (no-op, no pending changeset). OIDC wiring untested end-to-end until next real changeset-driven publish|T5,T9b
 T10|x|update README TODO: check off "Establish CI pipeline" & "Deploy a beta release to npmjs.com"|T4,T9a
+T11|x|eval knip: add as root devDep, add `knip.json`/`knip.jsonc` w/ workspace entry points (pnpm `workspaces` already set), run once & review findings across 5 pkgs+2 apps|I.cmd
+T12|x|fix or allowlist T11 findings (dead exports/deps) until `pnpm knip` exits 0|T11
+T13|x|add `knip` script to root `package.json` (`pnpm knip`), wire as CI step in `ci.yml` after typecheck|V9,T12
+T14|x|confirm local `pnpm knip` reproduces CI result exactly (same config/cmd)|V10,T13
 
 ## §B BUGS
 
@@ -63,3 +71,4 @@ B4|2026-07-16|first `npm publish` failed `E404 Scope not found` ∴ `@batkit` sc
 B5|2026-07-16|CI `vp install` fails nondeterministically: `esbuild@0.28.1` postinstall gets wrong platform binary. root cause: `tsup`(0.27.7) & `vite`/`vite-plus`(0.28.1) peer-pull 2 esbuild majors in same workspace pkg ∴ pnpm parallel postinstall races on binary symlink, worse w/ no committed lockfile. fix: `pnpm.overrides.esbuild: "0.28.1"` in root `package.json` pins single version workspace-wide|V3
 B6|2026-07-16|CI ran `typecheck`/`test` before `build`. `@batkit/*` pkgs resolve siblings via `dist/` (`exports` map) ∴ cross-pkg typecheck fails on clean checkout w/ no dist yet. local dev always built first so never caught. fix: reorder ci.yml → install, build, check, typecheck, test|V3
 B7|2026-07-16|`ci.yml` & `release.yml` both triggered on `push: branches:[main]` independently ∴ release could publish even if CI failed, no ordering guarantee. fix: release.yml now triggers on `workflow_run` of CI, gated `if: conclusion == 'success'`, checks out CI's exact commit sha|V8
+B8|2026-07-16|`npx knip` ran per-workspace via repo's vite-plus `npx` wrapper (`~/.vite-plus/bin/npx`), silently fanned out across all 7 workspaces & ignored root `knip.json` entirely. no error, exit 0, plausible-but-wrong (fewer) findings than real monorepo-aware run. fix: invoke `knip` bin direct (pnpm script / `node_modules/.bin`), ⊥ via `npx`/`pnpm dlx`|V11

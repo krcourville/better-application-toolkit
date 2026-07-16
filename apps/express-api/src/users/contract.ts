@@ -6,7 +6,7 @@ const c = initContract();
 
 extendZodWithOpenApi(z);
 
-export const UserSchema = z
+const UserSchema = z
   .object({
     id: z.string().openapi({ example: "1" }),
     name: z.string().min(1).max(100).openapi({ example: "Jane Doe" }),

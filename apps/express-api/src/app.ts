@@ -15,8 +15,6 @@ import { userHandlers } from "./users/index.js";
 /** Default avoids 3000/8080/5173 and other common dev ports; override with `PORT`. */
 export const PORT = process.env.PORT || 3785;
 
-export { logger } from "./logging.js";
-
 // Create Express app
 export const app: Express = express();
 const server = initServer();

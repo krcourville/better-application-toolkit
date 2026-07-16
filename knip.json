@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "apps/cli-app": {
+      "entry": ["src/index.ts"]
+    },
+    "apps/express-api": {
+      "entry": ["src/index.ts"]
+    }
+  },
+  "ignoreDependencies": ["vitest", "vite", "pino-pretty"],
+  "ignoreBinaries": ["lsof"]
+}

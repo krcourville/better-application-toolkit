@@ -24,4 +24,5 @@ jobs:
       - run: vp run -r --cache build
       - run: vp check
       - run: vp run -r --cache typecheck
+      - run: pnpm knip
       - run: vp run -r --cache test
