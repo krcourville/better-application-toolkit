@@ -204,27 +204,27 @@ better-application-toolkit/
 
 Run these from the **repository root**. They map to [`package.json`](./package.json) scripts, which are implemented with `vp` ([`vp run`](https://viteplus.dev/guide/run), [`vp check`](https://viteplus.dev/guide/check), [`vp test`](https://viteplus.dev/guide/test)).
 
-| Command                       | Purpose                                                                       |
-| ----------------------------- | ----------------------------------------------------------------------------- |
-| `vp install`                  | Install dependencies (delegates to the pinned package manager)                |
-| `vp run dev`                  | Express reference app with hot reload and workspace watchers                  |
-| `vp run build`                | Production build for all packages and apps                                    |
-| `vp run build:clean`          | Runs `vp run -r clean`, then root `tsc --build --clean`                       |
-| `vp run test`                 | Run all package tests                                                         |
-| `vp run test:watch`           | Tests in watch mode (`vp test -w`)                                            |
-| `vp check`                    | Format, lint, and type-check ([`vp check`](https://viteplus.dev/guide/check)) |
-| `vp run check`, `vp run lint` | Same as `vp check` (script aliases)                                           |
-| `vp run lint:fix`             | `vp check --fix`                                                              |
-| `vp run typecheck`            | `tsc --noEmit` in every workspace package                                     |
-| `pnpm knip`                   | Unused files/deps/exports check ([knip](https://knip.dev/)); same command CI runs |
-| `pnpm publint`                | package.json/exports validation per publishable package ([publint](https://publint.dev/)) |
+| Command                       | Purpose                                                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `vp install`                  | Install dependencies (delegates to the pinned package manager)                                                           |
+| `vp run dev`                  | Express reference app with hot reload and workspace watchers                                                             |
+| `vp run build`                | Production build for all packages and apps                                                                               |
+| `vp run build:clean`          | Runs `vp run -r clean`, then root `tsc --build --clean`                                                                  |
+| `vp run test`                 | Run all package tests                                                                                                    |
+| `vp run test:watch`           | Tests in watch mode (`vp test -w`)                                                                                       |
+| `vp check`                    | Format, lint, and type-check ([`vp check`](https://viteplus.dev/guide/check))                                            |
+| `vp run check`, `vp run lint` | Same as `vp check` (script aliases)                                                                                      |
+| `vp run lint:fix`             | `vp check --fix`                                                                                                         |
+| `vp run typecheck`            | `tsc --noEmit` in every workspace package                                                                                |
+| `pnpm knip`                   | Unused files/deps/exports check ([knip](https://knip.dev/)); same command CI runs                                        |
+| `pnpm publint`                | package.json/exports validation per publishable package ([publint](https://publint.dev/))                                |
 | `pnpm attw`                   | Dual ESM/CJS type-resolution check per publishable package ([Are the Types Wrong?](https://arethetypeswrong.github.io/)) |
-| `vp run cli`                  | Build and run the `cli-app` demo                                              |
-| `vp run release`              | Build, then Changesets publish                                                |
-| `vp run changeset`            | Interactive Changesets CLI                                                    |
-| `vp run version-packages`     | Apply version bumps from changesets                                           |
-| `vp run clean`                | Remove root `node_modules` and lockfile, then clean all packages              |
-| `vp run stop-server`          | Kill anything listening on port **3785**                                      |
+| `vp run cli`                  | Build and run the `cli-app` demo                                                                                         |
+| `vp run release`              | Build, then Changesets publish                                                                                           |
+| `vp run changeset`            | Interactive Changesets CLI                                                                                               |
+| `vp run version-packages`     | Apply version bumps from changesets                                                                                      |
+| `vp run clean`                | Remove root `node_modules` and lockfile, then clean all packages                                                         |
+| `vp run stop-server`          | Kill anything listening on port **3785**                                                                                 |
 
 Inside an individual package directory you can still use **`vp pack`**, **`vp test`**, or **`vp check`** directly; the table above covers the usual **root** workflows.
 
