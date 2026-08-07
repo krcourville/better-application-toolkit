@@ -2,7 +2,7 @@ import type { LogValue } from "@batkit/logger";
 import { runWithContext } from "@batkit/logger/async-local";
 import type { Context, Next } from "hono";
 
-export type LogContextInitializer = (ctx: Context) => Record<string, LogValue>;
+type LogContextInitializer = (ctx: Context) => Record<string, LogValue>;
 
 export interface LogContextMiddlewareOptions {
   /**
