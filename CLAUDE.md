@@ -29,7 +29,7 @@ Dependency order (build/test respects this): `rfc9457` → `errors`/`logger` →
 - `pnpm typecheck` — `tsc --noEmit` per pkg
 - `pnpm check` / `pnpm lint` — format+lint+typecheck (`vp check`)
 - `pnpm lint:fix` — `vp check --fix`
-- `pnpm dev` — express-api hot reload + workspace watchers
+- `pnpm dev:express-api` / `pnpm dev:hono-api` — reference app hot reload + workspace watchers (see [NPM-SCRIPTS.md](./NPM-SCRIPTS.md))
 - `pnpm changeset` — record versionable change (required for any pkg edit meant to ship)
 - `pnpm release` — build + `changeset publish`
 - `pnpm knip` — unused files/deps/exports check (config: `knip.json`); same command runs in CI

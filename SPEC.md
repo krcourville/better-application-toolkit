@@ -14,7 +14,21 @@ repo ready for AI-agent dev & publish `@batkit/*` pkgs to npm public registry.
 - no CI workflow exists yet (`.github/workflows` empty/missing).
 - no `CLAUDE.md`/`AGENTS.md` at root — agent context currently 0.
 
+- new ref app `apps/hono-api`, sibling `apps/express-api`, mirrors it feature-for-feature but on Hono
+- reuse `@batkit/errors`, `@batkit/logger`, `@batkit/logger-pino`, `@batkit/rfc9457` (framework-agnostic core)
+- `@batkit/express-middleware` ⊥ reused as-is (express req/res coupled) — hono-native equiv inline in app, ⊥ new shared pkg (single consumer, YAGNI)
+- routing/validation: `@hono/zod-openapi` replaces `@ts-rest/*`+`@anatine/zod-openapi`
+- docs UI: `@scalar/hono-api-reference` replaces `@scalar/express-api-reference`
+- `apps/hono-api` excluded from changesets, `.changeset/config.json` ignore list
+
 ## §I INTERFACES
+
+- cmd: `pnpm --filter hono-api dev` → hot reload local server
+- api: GET /health (hono-api) → 200 `{status,timestamp,uptime}`
+- api: GET /openapi.json (hono-api) → 200 OpenAPI spec
+- api: GET /docs (hono-api) → Scalar docs UI
+- api: demo/errors/users route groups (hono-api) mirror express-api contract shape
+- env: `PORT` (hono-api) optional, default 3786 (express-api uses 3785)
 
 - cmd: `pnpm knip` → runs knip (unused files/deps/exports check) across workspace, uses root `knip.json`/`knip.jsonc`
 - cmd: `pnpm publint` → validates package.json/exports map per publishable pkg (npm publish correctness)
@@ -63,6 +77,13 @@ V26: README usage examples ! show only `import { LoggerFacade } from "@batkit/lo
 V27: README type samples ! use inline `import("pkg").Type` syntax when type export available top-level — use plain `import type { X } from "pkg"` instead (noise, ⊥ needed since not circular-import workaround)
 V28: spec'ing new public API surface ! skip check of existing `src/*.ts` interface defs for already-shipped capability — grep symbol name across `src/` before drafting a "new method" task
 V29: "unused export" finding (knip/ponytail-style) against a published pkg's `src/index.ts` top-level export ! auto-trigger deletion — pkg live @ 1.0.0, removal = breaking change gated by V22 (major bump required). treat as 2.0-trim candidate, ⊥ silent cleanup
+
+V30: ∀ req (hono-api) → request-id log context set before handler runs (mirrors express-api's `logContextMiddleware`)
+V31: ∀ thrown error | validation failure (hono-api) → response body RFC 9457 problem-details shape
+V32: `apps/hono-api` ⊥ has changeset — must sit in `.changeset/config.json` ignore list
+V33: `apps/hono-api` ⊥ imports `@batkit/express-middleware`
+V34: unmatched route (hono-api) → 404 RFC 9457 problem-details shape
+V35: ∀ `OpenAPIHono` instance (hono-api, top-level | route-group) ! constructed w/ shared `defaultHook` (`src/lib/validation-hook.ts`) — `defaultHook` ⊥ propagate through `app.route()`, each mounted sub-app needs its own
 
 ## §T TASKS
 
@@ -117,6 +138,14 @@ T45|x|dedupe `packages/*/vitest.config.ts`: shared base (coverage/environment/gl
 T46|x|`apps/express-api`+`apps/cli-app` `lib/async-utils.ts`: replace hand-rolled `delay()` w/ `setTimeout` from `node:timers/promises`|
 T47|x|`apps/express-api`+`apps/cli-app` `logging.ts`: confirmed intentional standalone-copyable, each app self-contained reference example (CLAUDE.md). closed no-op, no shared pkg for 2-site 25-line dupe|
 
+T48|x|scaffold `apps/hono-api` (package.json, tsconfig.json, src/index.ts) modeled on express-api. `@hono/zod-openapi` pinned `^0.19.10` not latest `1.5.1` — 1.x requires zod4 peer, rest of repo on zod3|C
+T49|x|add `hono-api` to `.changeset/config.json` ignore list|V32
+T50|x|impl Hono app: health check + request-id log context middleware|I,V30
+T51|x|impl RFC9457 error handling: Hono `onError`+`notFound` using `@batkit/errors`/`@batkit/rfc9457`|V31,V34
+T52|x|impl demo/errors/users route groups via `@hono/zod-openapi`, mirror express-api contract shape. found+fixed B23 along the way|I,B23,V35
+T53|x|wire OpenAPI JSON endpoint + `@scalar/hono-api-reference` docs UI (`Scalar` export, `apiReference` alias deprecated)|I
+T54|x|wire `@batkit/logger-pino`, mirror express-api's logging.ts|C
+
 ## §B BUGS
 
 id|date|cause|fix
@@ -142,3 +171,4 @@ B19|2026-07-16|`apps/express-api` users/handlers.ts:98 `id = String(users.size+1
 B20|2026-07-16|`apps/express-api` src/lib/async-utils.ts:5 missing template-literal backticks, logs literal `"Delaying for ${ms}ms"` not interpolated ms value (`cli-app` sibling copy correct, `express-api` copy has typo)|T29
 B21|2026-07-16|`packages/logger-pino/README.md` documented fictional API (`createPinoLogger`/`createDevLogger`/`createProdLogger`/`PinoLoggerFactory`/`PinoLoggerAdapter`) — none exist in `src/index.ts`, real exports are `PinoLoggerProvider`+`adaptPinoToBatkitLogger`. also `errors/README.md` showed pre-0.1.3 `AppError(status, msg, code?, details?, isOperational?)` ctor (actual: options object per 0.1.3 changeset) & wrong "stack in non-production" `toJSON()` claim; `express-middleware/README.md` documented unexported `RequestContext` type. root cause: READMEs hand-written once, never re-synced after breaking API changes (0.1.1-0.1.3 changesets)|T32,V22
 B22|2026-08-07|T38 spec'd `LoggerFacade.mergeContext`/`getContext` as new work (T42) w/out checking existing `Logger` interface first. `types.ts:57,64` already declare `mergeContext(partial)`/`runWithContext(initial,fn)` on `Logger`, wired real by `ContextualLoggerProvider` (`async-local.ts:54-56`), console fallback throws w/ setup hint (`console-logger.ts:20-24`). feature already shipped, app meat code today can do `LoggerFacade.getLogger(name).mergeContext(...)` w/out any async-local import — just undocumented right in README. fix: T42 closed no-op, T39/T40 point at existing `logger.mergeContext(...)` instance method instead of a new static API|V28
+B23|2026-08-07|`apps/hono-api`: passed `defaultHook` to top-level `OpenAPIHono` only. `@hono/zod-openapi`'s `defaultHook` is a constructor option, doesn't propagate through `app.route()` — each of `demoApp`/`errorsApp`/`usersApp` is its own `OpenAPIHono` instance, so a failed body/param parse on any mounted route skipped the hook entirely & leaked a raw `{success:false,error:ZodError}` shape instead of RFC9457 422 (violated V31). fix: extracted shared `validationHook` (`src/lib/validation-hook.ts`), passed `{ defaultHook: validationHook }` to all 4 `OpenAPIHono` constructors (top-level + 3 route groups)|V31

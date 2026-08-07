@@ -2,8 +2,8 @@ import { extendZodWithOpenApi } from "@anatine/zod-openapi";
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { demoContract } from "./demo/contract.js";
-import { errorsContract } from "./errors/contract";
-import { usersContract } from "./users/contract";
+import { errorsContract } from "./errors/contract.js";
+import { usersContract } from "./users/contract.js";
 
 const contract = initContract();
 

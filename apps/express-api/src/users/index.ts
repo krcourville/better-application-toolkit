@@ -1,1 +1,1 @@
-export { userHandlers } from "./handlers";
+export { userHandlers } from "./handlers.js";

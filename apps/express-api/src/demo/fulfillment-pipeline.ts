@@ -1,6 +1,6 @@
 import { ValidationError } from "@batkit/errors";
 import { LoggerFacade } from "@batkit/logger";
-import { delay } from "../lib/async-utils";
+import { delay } from "../lib/async-utils.js";
 
 export interface FulfillmentItem {
   sku: string;

@@ -54,7 +54,9 @@
     "test:watch": "vp test -w",
     "typecheck": "tsc --noEmit",
     "lint": "vp check .",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "publint": "publint .",
+    "attw": "attw --pack . --profile node16"
   },
   "dependencies": {
     "zod": "^3.24.1"

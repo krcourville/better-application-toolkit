@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NotFoundError, ValidationError } from "@batkit/errors";
 import type { Request } from "express";
-import { CreateUserSchema, UpdateUserSchema } from "./contract";
+import { CreateUserSchema, UpdateUserSchema } from "./contract.js";
 import { LoggerFacade } from "@batkit/logger";
 
 // Simple in-memory user store
