@@ -27,6 +27,9 @@ repo ready for AI-agent dev & publish `@batkit/*` pkgs to npm public registry.
 - file: `.github/workflows/ci.yml` (new) → lint+typecheck+test+build on PR/push
 - file: `.github/workflows/release.yml` (new) → direct version+publish on main after CI success, no review PR (V4)
 - env: `GITHUB_TOKEN` auto for changesets release PR
+- file: `packages/{rfc9457,errors,logger,logger-pino,express-middleware}/README.md` → per-pkg usage docs, need source+issues links (V25), import examples (V26)
+- file: `packages/logger/src/logger-facade.ts` → `LoggerFacade` export surface (today: configure, getLogger, getProvider, setProvider — no context-merge passthrough)
+- file: `packages/logger/src/async-local*` (or equiv) → `mergeLogContext`, `getLogContext`, `runWithContext`, `ContextualLoggerProvider` exports, entry `@batkit/logger/async-local`
 - auth: npm publish via OIDC Trusted Publisher (GitHub Actions), ⊥ long-lived token stored
 
 ## §V INVARIANTS
@@ -55,6 +58,11 @@ V21: any error-formatting middleware wrapping ts-rest routes (e.g. `res.json` pa
 V22: v1.0.0 ! signal public API stability commitment — breaking change post-1.0 ! major bump (semver)
 V23: all 5 pkgs ! release 1.0.0 together in 1 changeset (synced versioning, ⊥ mixed 0.x/1.x across workspace)
 V24: each pkg README code sample ! reference only symbols present in that pkg's `src/index.ts` exports — check README against exports whenever a breaking-change changeset touches public API
+V25: every `packages/*/README.md` ! link github repo (source) + github issues (feedback/concerns) — reuse `package.json` `homepage`/`bugs` urls already present, ⊥ hand-type new ones
+V26: README usage examples ! show only `import { LoggerFacade } from "@batkit/logger"` in app-logic/business-code sections — async-local/provider-specific imports (`mergeLogContext`, `ContextualLoggerProvider`, ...) confined to bootstrap/config example block, marked as such
+V27: README type samples ! use inline `import("pkg").Type` syntax when type export available top-level — use plain `import type { X } from "pkg"` instead (noise, ⊥ needed since not circular-import workaround)
+V28: spec'ing new public API surface ! skip check of existing `src/*.ts` interface defs for already-shipped capability — grep symbol name across `src/` before drafting a "new method" task
+V29: "unused export" finding (knip/ponytail-style) against a published pkg's `src/index.ts` top-level export ! auto-trigger deletion — pkg live @ 1.0.0, removal = breaking change gated by V22 (major bump required). treat as 2.0-trim candidate, ⊥ silent cleanup
 
 ## §T TASKS
 
@@ -96,6 +104,18 @@ T32|x|verify each pkg README + CHANGELOG.md reflect current API, no stale pre-1.
 T33|x|`pnpm changeset`: major bump all 5 pkgs → 1.0.0 in single changeset (synced version). `.changeset/v1-0-0-release.md` written, `changeset status` confirms all 5 @ major, `cli-app` patch-bump as workspace dependent expected (already precedented, @ 1.0.2)|V23
 T34|x|dry-run verify (`npm publish --dry-run` per pkg) before merge, reconfirm V7 holds at 1.0. rebuilt, all 5 tarballs valid (correct dist/js+maps/package.json contents), only rejection = "cannot publish over 0.1.x" (expected, dry-run uses pre-bump version; 1.0.0 never published so real publish won't collide)|V7,T33
 T35|x|merge → release workflow publishes 1.0.0 all 5 pkgs, verify via `npm view @batkit/<pkg> version`. CI green (run 29521087792), release green (run 29521153302), all 5 confirmed @ 1.0.0 live on npm|T33,T34
+T36|x|audit all `packages/*/README.md`: none had repo/issues links (confirmed via grep, only unrelated `github.com/pinojs/...` doc-link hit in logger-pino)|V25
+T37|x|added `## Links` section (Source + Issues, urls pulled from each pkg's own `package.json` homepage/bugs) before `## License` in all 5 `packages/*/README.md`|V25,T36
+T38|x|superseded by B22: no new `LoggerFacade` passthrough needed. `Logger` instance already has `mergeContext`/`runWithContext` (`types.ts:57,64`), real when wrapped w/ `ContextualLoggerProvider`. app meat code: `LoggerFacade.getLogger(name).mergeContext(...)`, only bootstrap wires `ContextualLoggerProvider`+import from `@batkit/logger/async-local`|B22,I.logger-facade.ts,I.async-local
+T39|x|`packages/express-middleware/README.md`: split "Async-local log context" example into bootstrap block (`ContextualLoggerProvider` only) + app block (`logger.mergeContext(...)` off `LoggerFacade.getLogger(...)`, no async-local import); updated API Reference prose (~line 162) same pattern|V26,V24,B22
+T40|x|`packages/logger/README.md`: same bootstrap/app split in "Async-local log context" section, API Reference bullet updated to note `mergeContext`/`runWithContext` live on `Logger` itself, `getLogContext` called out as the only remaining async-local import needed outside bootstrap (no `Logger`-instance equivalent exists)|V26,V24,B22
+T41|x|scanned rfc9457/errors/logger-pino README: no `import("pkg").Type` inline noise, no mid-logic `mergeLogContext`/direct async-local misuse. logger-pino's `ContextualLoggerProvider` use already bootstrap-only. no changes needed|V26,V24
+T42|x|closed no-op — feature already exists, see B22. no code change needed|B22
+T43|x|`packages/express-middleware/README.md` ~line 169: `initialContext?: (req: Request) => Record<string, import("@batkit/logger").LogValue>` → top-level `import type { LogValue } from "@batkit/logger"`, plain `Record<string, LogValue>` in interface|V27
+T44|x|dedupe `packages/*/tsconfig.build.json`: shared `tsconfig.build.base.json`, per-pkg extends+override `lib`/`types`|
+T45|.|dedupe `packages/*/vitest.config.ts`: shared base (coverage/environment/globals), per-pkg thin override|
+T46|.|`apps/express-api`+`apps/cli-app` `lib/async-utils.ts`: replace hand-rolled `delay()` w/ `setTimeout` from `node:timers/promises`|
+T47|.|`apps/express-api`+`apps/cli-app` `logging.ts`: dedupe 25-line bootstrap, or confirm intentional standalone-copyable-per-app & close no-op|
 
 ## §B BUGS
 
@@ -121,3 +141,4 @@ B18|2026-07-16|`apps/express-api` demo/fulfillment-pipeline.ts `#reserveLine` pe
 B19|2026-07-16|`apps/express-api` users/handlers.ts:98 `id = String(users.size+1)`. delete+create ∴ id collision w/ existing user (demo-only, no invariant)|T28
 B20|2026-07-16|`apps/express-api` src/lib/async-utils.ts:5 missing template-literal backticks, logs literal `"Delaying for ${ms}ms"` not interpolated ms value (`cli-app` sibling copy correct, `express-api` copy has typo)|T29
 B21|2026-07-16|`packages/logger-pino/README.md` documented fictional API (`createPinoLogger`/`createDevLogger`/`createProdLogger`/`PinoLoggerFactory`/`PinoLoggerAdapter`) — none exist in `src/index.ts`, real exports are `PinoLoggerProvider`+`adaptPinoToBatkitLogger`. also `errors/README.md` showed pre-0.1.3 `AppError(status, msg, code?, details?, isOperational?)` ctor (actual: options object per 0.1.3 changeset) & wrong "stack in non-production" `toJSON()` claim; `express-middleware/README.md` documented unexported `RequestContext` type. root cause: READMEs hand-written once, never re-synced after breaking API changes (0.1.1-0.1.3 changesets)|T32,V22
+B22|2026-08-07|T38 spec'd `LoggerFacade.mergeContext`/`getContext` as new work (T42) w/out checking existing `Logger` interface first. `types.ts:57,64` already declare `mergeContext(partial)`/`runWithContext(initial,fn)` on `Logger`, wired real by `ContextualLoggerProvider` (`async-local.ts:54-56`), console fallback throws w/ setup hint (`console-logger.ts:20-24`). feature already shipped, app meat code today can do `LoggerFacade.getLogger(name).mergeContext(...)` w/out any async-local import — just undocumented right in README. fix: T42 closed no-op, T39/T40 point at existing `logger.mergeContext(...)` instance method instead of a new static API|V28

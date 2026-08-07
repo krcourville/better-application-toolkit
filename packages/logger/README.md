@@ -71,28 +71,31 @@ try {
 
 **Background:** [Understanding AsyncLocalStorage](../../docs/async-local-storage.md)
 
-For request- or job-scoped fields (`requestId`, `transactionId`, etc.), use the **`@batkit/logger/async-local`** entry (built on `AsyncLocalStorage`). Wrap your `LoggerProvider` with `ContextualLoggerProvider`, run the scope with `runWithContext`, and optionally merge more fields later with `mergeLogContext`.
+For request- or job-scoped fields (`requestId`, `transactionId`, etc.), use the **`@batkit/logger/async-local`** entry (built on `AsyncLocalStorage`). Wrap your `LoggerProvider` with `ContextualLoggerProvider` once at bootstrap, then everywhere else call `mergeContext`/`runWithContext` on the `Logger` instance you already have from `LoggerFacade.getLogger(...)`—no further `@batkit/logger/async-local` import needed.
 
 ```typescript
+// bootstrap.ts — one-time setup
 import { LoggerFacade } from "@batkit/logger";
-import {
-  ContextualLoggerProvider,
-  mergeLogContext,
-  runWithContext,
-  getLogContext,
-} from "@batkit/logger/async-local";
+import { ContextualLoggerProvider } from "@batkit/logger/async-local";
 import { PinoLoggerProvider } from "@batkit/logger-pino";
-import { randomUUID } from "node:crypto";
 
 LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
+```
 
-runWithContext({ requestId: randomUUID() }, () => {
-  mergeLogContext({ transactionId: "txn-123" });
-  const log = LoggerFacade.getLogger("payments");
+```typescript
+// anywhere else — only ever imports LoggerFacade
+import { LoggerFacade } from "@batkit/logger";
+import { randomUUID } from "node:crypto";
+
+const log = LoggerFacade.getLogger("payments");
+
+log.runWithContext({ requestId: randomUUID() }, () => {
+  log.mergeContext({ transactionId: "txn-123" });
   log.info("Captured"); // structured context includes both ids
-  console.log(getLogContext());
 });
 ```
+
+Need the raw context bag directly (rare—e.g. forwarding correlation ids to a non-logging call)? `getLogContext` from `@batkit/logger/async-local` reads it without a `Logger` instance.
 
 In Express, mount [`logContextMiddleware`](../express-middleware/README.md) early instead of calling `runWithContext` yourself at the top of every route.
 
@@ -104,10 +107,10 @@ For JSON log lines in production, use [@batkit/logger-pino](../logger-pino) (or 
 
 See exported types in `src/types.ts`. Highlights:
 
-- **`Logger`** — `debug` / `info` / `warn` / `error` use the `LogMethod` overloads (context-only, message + context, error + context, error + message + context).
+- **`Logger`** — `debug` / `info` / `warn` / `error` use the `LogMethod` overloads (context-only, message + context, error + context, error + message + context). Also `mergeContext(partial)` and `runWithContext(initial, fn)` (real when wrapped with `ContextualLoggerProvider`; the default console logger's `mergeContext` throws with setup instructions).
 - **`LoggerProvider`** — `getLogger(name)`, `isLogLevelEnabled`.
 - **`LoggerFacade`** — `getLogger`, `setProvider`, `getProvider`, `configure`.
-- **Node-only:** `@batkit/logger/async-local` — `runWithContext`, `getLogContext`, `mergeLogContext`, `ContextualLoggerProvider`.
+- **Node-only:** `@batkit/logger/async-local` — `ContextualLoggerProvider` (bootstrap) plus `getLogContext` for reading the raw context bag without a `Logger` instance.
 
 ## Using with Other Implementations
 
@@ -178,6 +181,11 @@ import { ConsoleLoggerProvider } from "@batkit/logger/console";
 ```
 
 **Node-only:** `@batkit/logger/async-local`
+
+## Links
+
+- [Source](https://github.com/krcourville/better-application-toolkit/tree/main/packages/logger)
+- [Issues](https://github.com/krcourville/better-application-toolkit/issues)
 
 ## License
 

@@ -234,6 +234,11 @@ This package works in all modern browsers and Node.js environments. It has no No
 - [@batkit/errors](../errors) - Standardized error classes that integrate with RFC 9457
 - [@batkit/express-middleware](../express-middleware) - Express middleware that automatically formats errors as RFC 9457
 
+## Links
+
+- [Source](https://github.com/krcourville/better-application-toolkit/tree/main/packages/rfc9457)
+- [Issues](https://github.com/krcourville/better-application-toolkit/issues)
+
 ## License
 
 MIT © Ken Courville

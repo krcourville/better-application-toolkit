@@ -185,6 +185,11 @@ Pino includes browser support out of the box. The same API works in both Node.js
 - [Pino Pretty](https://github.com/pinojs/pino-pretty)
 - [@batkit/logger](../logger) - Logger facade documentation
 
+## Links
+
+- [Source](https://github.com/krcourville/better-application-toolkit/tree/main/packages/logger-pino)
+- [Issues](https://github.com/krcourville/better-application-toolkit/issues)
+
 ## License
 
 MIT © Ken Courville

@@ -84,19 +84,25 @@ app.use(errorHandler());
 
 ### Async-local log context
 
-`logContextMiddleware` wraps each request in [`runWithContext`](https://nodejs.org/api/async_context.html#asynchronous-context-tracking) from `@batkit/logger/async-local` so your code can call `mergeLogContext`, use `getLogContext`, and attach a [`ContextualLoggerProvider`](../logger/README.md)—without `req.logger` or Express-specific types inside the logger package.
+`logContextMiddleware` wraps each request in [`runWithContext`](https://nodejs.org/api/async_context.html#asynchronous-context-tracking) so nested async work sees ambient log fields. Bootstrap wires the async-local plumbing once (`ContextualLoggerProvider`); everywhere else in your app, call `mergeContext`/`runWithContext` on the `Logger` instance you already have from `LoggerFacade.getLogger(...)`—no separate `@batkit/logger/async-local` import needed outside bootstrap.
 
 **Background:** see the toolkit guide [Understanding AsyncLocalStorage](../../docs/async-local-storage.md).
 
 ```typescript
-import { logContextMiddleware } from "@batkit/express-middleware";
+// bootstrap.ts — one-time setup
 import { LoggerFacade } from "@batkit/logger";
-import { ContextualLoggerProvider, mergeLogContext } from "@batkit/logger/async-local";
+import { ContextualLoggerProvider } from "@batkit/logger/async-local";
 import { PinoLoggerProvider } from "@batkit/logger-pino";
-import express from "express";
-import { randomUUID } from "node:crypto";
 
 LoggerFacade.setProvider(new ContextualLoggerProvider(new PinoLoggerProvider({ level: "info" })));
+```
+
+```typescript
+// app.ts — everyday code, only ever imports LoggerFacade
+import { logContextMiddleware } from "@batkit/express-middleware";
+import { LoggerFacade } from "@batkit/logger";
+import express from "express";
+import { randomUUID } from "node:crypto";
 
 const app = express();
 app.use(express.json());
@@ -110,8 +116,9 @@ app.use(
 );
 
 app.post("/orders/:id/submit", (req, res) => {
-  mergeLogContext({ transactionId: req.get("x-transaction-id") ?? randomUUID() });
-  LoggerFacade.getLogger("orders").info("Submitting"); // includes requestId + transactionId in structured output
+  const logger = LoggerFacade.getLogger("orders");
+  logger.mergeContext({ transactionId: req.get("x-transaction-id") ?? randomUUID() });
+  logger.info("Submitting"); // includes requestId + transactionId in structured output
   res.status(204).end();
 });
 ```
@@ -152,14 +159,16 @@ app.use(
 
 #### `logContextMiddleware(options?): Middleware`
 
-Runs `next()` inside `runWithContext(initialContext(req), …)` so nested async work can use `getLogContext` / `mergeLogContext` from `@batkit/logger/async-local`.
+Runs `next()` inside `runWithContext(initialContext(req), …)` so nested async work can call `mergeContext` on any `Logger` from `LoggerFacade.getLogger(...)`, or use `getLogContext` from `@batkit/logger/async-local` to read the raw bag directly.
 
 **Options:**
 
 ```typescript
+import type { LogValue } from "@batkit/logger";
+
 interface LogContextMiddlewareOptions {
   /** Default: `() => ({})` */
-  initialContext?: (req: Request) => Record<string, import("@batkit/logger").LogValue>;
+  initialContext?: (req: Request) => Record<string, LogValue>;
 }
 ```
 
@@ -308,6 +317,11 @@ app.listen(PORT, () => {
 ## TypeScript
 
 `logContextMiddleware` uses standard Express typings. Use `getLogContext()` from `@batkit/logger/async-local` when you need the current bag of log fields in a handler or service.
+
+## Links
+
+- [Source](https://github.com/krcourville/better-application-toolkit/tree/main/packages/express-middleware)
+- [Issues](https://github.com/krcourville/better-application-toolkit/issues)
 
 ## License
 

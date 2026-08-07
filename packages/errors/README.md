@@ -248,6 +248,11 @@ function handleError(error: AppError) {
 }
 ```
 
+## Links
+
+- [Source](https://github.com/krcourville/better-application-toolkit/tree/main/packages/errors)
+- [Issues](https://github.com/krcourville/better-application-toolkit/issues)
+
 ## License
 
 MIT © Ken Courville
