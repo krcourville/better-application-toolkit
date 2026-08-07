@@ -21,6 +21,14 @@ jobs:
           cache: true
 
       - run: vp install
+
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: node_modules/.vite/task-cache
+          key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            vite-task-${{ runner.os }}-${{ runner.arch }}-
+
       - run: vp run -r --cache build
       - run: vp run publint
       - run: vp run attw
@@ -28,3 +36,9 @@ jobs:
       - run: vp run -r --cache typecheck
       - run: vp run knip
       - run: vp run -r --cache test
+
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        if: success()
+        with:
+          path: node_modules/.vite/task-cache
+          key: vite-task-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
