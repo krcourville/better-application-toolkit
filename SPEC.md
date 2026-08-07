@@ -114,7 +114,7 @@ T42|x|closed no-op — feature already exists, see B22. no code change needed|B2
 T43|x|`packages/express-middleware/README.md` ~line 169: `initialContext?: (req: Request) => Record<string, import("@batkit/logger").LogValue>` → top-level `import type { LogValue } from "@batkit/logger"`, plain `Record<string, LogValue>` in interface|V27
 T44|x|dedupe `packages/*/tsconfig.build.json`: shared `tsconfig.build.base.json`, per-pkg extends+override `lib`/`types`|
 T45|x|dedupe `packages/*/vitest.config.ts`: shared base (coverage/environment/globals), per-pkg thin override|
-T46|.|`apps/express-api`+`apps/cli-app` `lib/async-utils.ts`: replace hand-rolled `delay()` w/ `setTimeout` from `node:timers/promises`|
+T46|x|`apps/express-api`+`apps/cli-app` `lib/async-utils.ts`: replace hand-rolled `delay()` w/ `setTimeout` from `node:timers/promises`|
 T47|.|`apps/express-api`+`apps/cli-app` `logging.ts`: dedupe 25-line bootstrap, or confirm intentional standalone-copyable-per-app & close no-op|
 
 ## §B BUGS
