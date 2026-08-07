@@ -115,7 +115,7 @@ T43|x|`packages/express-middleware/README.md` ~line 169: `initialContext?: (req:
 T44|x|dedupe `packages/*/tsconfig.build.json`: shared `tsconfig.build.base.json`, per-pkg extends+override `lib`/`types`|
 T45|x|dedupe `packages/*/vitest.config.ts`: shared base (coverage/environment/globals), per-pkg thin override|
 T46|x|`apps/express-api`+`apps/cli-app` `lib/async-utils.ts`: replace hand-rolled `delay()` w/ `setTimeout` from `node:timers/promises`|
-T47|.|`apps/express-api`+`apps/cli-app` `logging.ts`: dedupe 25-line bootstrap, or confirm intentional standalone-copyable-per-app & close no-op|
+T47|x|`apps/express-api`+`apps/cli-app` `logging.ts`: confirmed intentional standalone-copyable, each app self-contained reference example (CLAUDE.md). closed no-op, no shared pkg for 2-site 25-line dupe|
 
 ## §B BUGS
 
